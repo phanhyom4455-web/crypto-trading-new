@@ -1,0 +1,82 @@
+<!-- ============================================ -->
+<!-- 资金管理功能（扣除 + 新增） -->
+<!-- ============================================ -->
+<script>
+    // ============================================
+    // 扣除资金弹窗
+    // ============================================
+    function deductBalance(userId, username) {
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML =
+            '<div style="background:#fff;border-radius:16px;padding:30px;width:400px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+            '<h3 style="margin:0 0 10px;font-size:18px;">💰 扣除资金</h3>' +
+            '<p style="color:#666;margin-bottom:20px;font-size:14px;">用户：<strong>' + username + '</strong>（ID: ' + userId + '）</p>' +
+            '<label style="font-weight:600;font-size:14px;display:block;margin-bottom:8px;">扣除金额（USDT）</label>' +
+            '<input type="number" id="deductAmountInput" placeholder="请输入扣除金额" min="0" style="width:100%;padding:12px;border:2px solid #e8ecf1;border-radius:8px;font-size:16px;margin-bottom:20px;box-sizing:border-box;">' +
+            '<div style="display:flex;gap:10px;">' +
+            '<button onclick="submitDeduct(' + userId + ')" style="flex:1;padding:12px;border:none;background:#ef4444;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;">确定扣除</button>' +
+            '<button onclick="this.closest(\'div\').parentElement.parentElement.remove()" style="flex:1;padding:12px;border:none;background:#e5e7eb;color:#333;border-radius:8px;font-weight:600;cursor:pointer;">取消</button>' +
+            '</div></div>';
+        document.body.appendChild(modal);
+    }
+
+    function submitDeduct(userId) {
+        var amount = document.getElementById('deductAmountInput').value;
+        if (!amount || parseFloat(amount) <= 0) {
+            alert('请输入有效的金额');
+            return;
+        }
+
+        fetch('/api/admin/deduct-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, amount: parseFloat(amount) })
+        }).then(r => r.json()).then(result => {
+            document.querySelectorAll('div[style*="z-index:9999"]').forEach(el => el.remove());
+            alert(result.success ? '✅ ' + result.message : '❌ 失败：' + result.message);
+            if (result.success) location.reload();
+        }).catch(() => {
+            alert('❌ 请求失败');
+        });
+    }
+
+    // ============================================
+    // 新增资金弹窗
+    // ============================================
+    function addBalance(userId, username) {
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML =
+            '<div style="background:#fff;border-radius:16px;padding:30px;width:400px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+            '<h3 style="margin:0 0 10px;font-size:18px;">➕ 新增资金</h3>' +
+            '<p style="color:#666;margin-bottom:20px;font-size:14px;">用户：<strong>' + username + '</strong>（ID: ' + userId + '）</p>' +
+            '<label style="font-weight:600;font-size:14px;display:block;margin-bottom:8px;">新增金额（USDT）</label>' +
+            '<input type="number" id="addAmountInput" placeholder="请输入新增金额" min="0" style="width:100%;padding:12px;border:2px solid #e8ecf1;border-radius:8px;font-size:16px;margin-bottom:20px;box-sizing:border-box;">' +
+            '<div style="display:flex;gap:10px;">' +
+            '<button onclick="submitAdd(' + userId + ')" style="flex:1;padding:12px;border:none;background:#10b981;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;">确定新增</button>' +
+            '<button onclick="this.closest(\'div\').parentElement.parentElement.remove()" style="flex:1;padding:12px;border:none;background:#e5e7eb;color:#333;border-radius:8px;font-weight:600;cursor:pointer;">取消</button>' +
+            '</div></div>';
+        document.body.appendChild(modal);
+    }
+
+    function submitAdd(userId) {
+        var amount = document.getElementById('addAmountInput').value;
+        if (!amount || parseFloat(amount) <= 0) {
+            alert('请输入有效的金额');
+            return;
+        }
+
+        fetch('/api/admin/add-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, amount: parseFloat(amount) })
+        }).then(r => r.json()).then(result => {
+            document.querySelectorAll('div[style*="z-index:9999"]').forEach(el => el.remove());
+            alert(result.success ? '✅ ' + result.message : '❌ 失败：' + result.message);
+            if (result.success) location.reload();
+        }).catch(() => {
+            alert('❌ 请求失败');
+        });
+    }
+</script>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全设置 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f0f2f5; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .navbar-brand { color: #fff !important; font-weight: 800; font-size: 24px; }
+        .navbar-brand i { margin-right: 10px; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; padding: 8px 18px !important; border-radius: 8px; }
+        .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.15); }
+        .nav-link i { margin-right: 6px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: none; padding: 8px; }
+        .dropdown-item { border-radius: 8px; padding: 10px 20px; }
+        .dropdown-item:hover { background: #f3f4f6; }
+        .dropdown-item i { width: 20px; margin-right: 10px; color: #667eea; }
+        .footer { background: #1a202c; color: rgba(255,255,255,0.7); padding: 40px 0; margin-top: 50px; }
+        .footer a { color: rgba(255,255,255,0.6); text-decoration: none; display: block; padding: 4px 0; }
+        .footer a:hover { color: #fff; }
+        .footer h5 { color: #fff; font-weight: 700; }
+        .profile-card { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #fff; font-size: 32px; }
+        .sidebar-menu { list-style: none; padding: 0; }
+        .sidebar-menu li a { display: block; padding: 10px 16px; border-radius: 8px; color: #495057; text-decoration: none; transition: 0.3s; }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active { background: #f3f4f6; color: #667eea; }
+        .sidebar-menu li a i { width: 20px; margin-right: 8px; }
+        .list-group-item { border: none; border-bottom: 1px solid #f3f4f6; padding: 12px 16px; }
+        .list-group-item:last-child { border-bottom: none; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 8px; padding: 8px 20px; font-weight: 600; color: #fff; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-secondary { background: #e5e7eb; border: none; border-radius: 8px; padding: 8px 20px; font-weight: 600; color: #374151; }
+        .btn-secondary:hover { background: #d1d5db; }
+        .btn-success { background: #10b981; border: none; border-radius: 8px; padding: 8px 20px; font-weight: 600; color: #fff; }
+        .btn-success:hover { transform: translateY(-2px); }
+        .btn-danger { background: #ef4444; border: none; border-radius: 8px; padding: 8px 20px; font-weight: 600; color: #fff; }
+        .btn-danger:hover { transform: translateY(-2px); }
+        .alert-info { background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; padding: 12px 16px; }
+        .alert-success { background: #d1fae5; color: #065f46; border: none; border-radius: 8px; padding: 12px 16px; }
+        .alert-danger { background: #fee2e2; color: #991b1b; border: none; border-radius: 8px; padding: 12px 16px; }
+        .modal-content { border-radius: 16px; }
+        .modal-header { border-bottom: none; }
+        .modal-footer { border-top: none; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+        .status-badge.enabled { background: #d1fae5; color: #065f46; }
+        .status-badge.disabled { background: #fee2e2; color: #991b1b; }
+        .form-control { border-radius: 8px; padding: 10px 16px; border: 2px solid #e5e7eb; }
+        .form-control:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
+        .secret-box { background: #f3f4f6; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 14px; word-break: break-all; text-align: center; }
+        #qrCodeContainer { background: #fff; padding: 15px; border-radius: 12px; display: inline-block; border: 2px solid #e5e7eb; }
+        #qrCodeImage { width: 200px; height: 200px; background: #fff; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins"></i>CoinTrade</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market">行情</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/trade">交易</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit">充值</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/withdraw">提现</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/help">帮助</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <% if (user) { %>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle d-flex align-items-center gap-2" style="color: #fff; border: none; padding: 4px 12px;" data-bs-toggle="dropdown">
+                                <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                                <span><%= user.username %></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                                <li><a class="dropdown-item" href="/profile-edit"><i class="fas fa-edit"></i>编辑资料</a></li>
+                                <li><a class="dropdown-item" href="/assets"><i class="fas fa-wallet"></i>资产明细</a></li>
+                                <li><a class="dropdown-item" href="/trade-history"><i class="fas fa-history"></i>交易记录</a></li>
+                                <li><a class="dropdown-item" href="/security"><i class="fas fa-shield-alt"></i>安全设置</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/api/logout"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-login" style="color:#fff;border:2px solid rgba(255,255,255,0.4);border-radius:50px;padding:8px 24px;background:transparent;">登录</a>
+                        <a href="/register" class="btn btn-register" style="background:#fff;color:#667eea;border:none;border-radius:50px;padding:8px 24px;font-weight:600;">注册</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row g-4">
+            <div class="col-lg-3">
+                <div class="profile-card">
+                    <div class="text-center">
+                        <div class="profile-avatar"><%= user ? user.username.charAt(0).toUpperCase() : 'U' %></div>
+                        <h5 class="fw-bold"><%= user ? user.username : '用户' %></h5>
+                        <p class="text-muted small"><%= user ? user.email : '' %></p>
+                        <span class="badge bg-success">VIP</span>
+                    </div>
+                    <hr>
+                    <ul class="sidebar-menu">
+                        <li><a href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                        <li><a href="/profile-edit"><i class="fas fa-edit"></i>编辑资料</a></li>
+                        <li><a href="/assets"><i class="fas fa-wallet"></i>资产明细</a></li>
+                        <li><a href="/trade-history"><i class="fas fa-history"></i>交易记录</a></li>
+                        <li><a href="/security" class="active"><i class="fas fa-shield-alt"></i>安全设置</a></li>
+                        <li><hr></li>
+                        <li><a href="/deposit"><i class="fas fa-arrow-down text-success"></i>充值</a></li>
+                        <li><a href="/withdraw"><i class="fas fa-arrow-up text-danger"></i>提现</a></li>
+                        <li><a href="/api/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="profile-card">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-shield-alt text-primary me-2"></i>安全设置</h5>
+
+                    <div id="message" style="display: none;" class="alert mb-3"></div>
+
+                    <!-- 资金密码 -->
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-key text-warning me-2"></i>
+                            <strong>资金密码</strong>
+                            <p class="text-muted small mb-0">用于提现和交易时的二次验证</p>
+                        </div>
+                        <div>
+                            <span id="fundStatus" class="status-badge disabled">未设置</span>
+                            <button class="btn btn-primary btn-sm ms-2" onclick="showFundPasswordModal()">
+                                <i class="fas fa-plus"></i> 设置
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 谷歌验证器 (2FA) -->
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-google text-danger me-2"></i>
+                            <strong>谷歌验证器 (2FA)</strong>
+                            <p class="text-muted small mb-0">启用后登录需要6位动态验证码</p>
+                        </div>
+                        <div>
+                            <span id="twofaStatus" class="status-badge disabled">未启用</span>
+                            <button class="btn btn-primary btn-sm ms-2" onclick="show2FAModal()">
+                                <i class="fas fa-plus"></i> 启用
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 登录设备管理 -->
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-laptop text-info me-2"></i>
+                            <strong>登录设备管理</strong>
+                            <p class="text-muted small mb-0">管理您的登录设备</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary btn-sm" onclick="alert('设备管理功能开发中')">
+                                <i class="fas fa-list"></i> 查看
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- IP白名单 -->
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-ip text-success me-2"></i>
+                            <strong>IP白名单</strong>
+                            <p class="text-muted small mb-0">只允许白名单内的IP登录</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary btn-sm" onclick="alert('IP白名单功能开发中')">
+                                <i class="fas fa-edit"></i> 管理
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 资金密码弹窗 ===== -->
+    <div class="modal fade" id="fundPasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-key text-warning me-2"></i>设置资金密码</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="fundMsg" style="display: none;" class="alert"></div>
+                    <p class="text-muted">资金密码用于提现和交易时的二次验证，请妥善保管</p>
+                    <div class="mb-3">
+                        <label class="fw-bold">资金密码</label>
+                        <input type="password" class="form-control" id="fundPassword" placeholder="请输入6-20位资金密码" minlength="6">
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">确认密码</label>
+                        <input type="password" class="form-control" id="fundPasswordConfirm" placeholder="请再次输入资金密码">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="setFundPassword()">确认设置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 2FA弹窗 ===== -->
+    <div class="modal fade" id="twofaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-google text-danger me-2"></i>谷歌验证器 (2FA)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="twofaMsg" style="display: none;" class="alert"></div>
+                    <div id="twofaSetup">
+                        <p class="text-muted">请使用 Google Authenticator 扫描以下二维码</p>
+                        <div class="text-center py-3">
+                            <div id="qrCodeContainer">
+                                <img id="qrCodeImage" src="" alt="二维码" style="width: 200px; height: 200px; background: #fff;">
+                                <p class="text-muted small mt-2">或手动输入密钥</p>
+                                <div class="secret-box" id="twofaSecret">加载中...</div>
+                                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copySecret()">
+                                    <i class="fas fa-copy"></i> 复制密钥
+                                </button>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>手动输入密钥：</strong> 打开 Google Authenticator，点击"+" → "输入设置密钥"，输入上面的密钥即可
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold">输入6位验证码</label>
+                            <input type="text" class="form-control" id="twofaCode" placeholder="请输入6位数字验证码" maxlength="6" inputmode="numeric" style="font-size: 20px; letter-spacing: 4px; text-align: center;">
+                        </div>
+                        <button class="btn btn-success w-100" onclick="enable2FA()">
+                            <i class="fas fa-check"></i> 启用2FA
+                        </button>
+                    </div>
+                    <div id="twofaDisable" style="display: none;">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            禁用2FA将降低账户安全性，确定要继续吗？
+                        </div>
+                        <button class="btn btn-danger w-100" onclick="disable2FA()">
+                            <i class="fas fa-times"></i> 禁用2FA
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4"><h5><i class="fas fa-coins me-2"></i>CoinTrade</h5><p>专业的数字货币交易平台</p></div>
+                <div class="col-md-2"><h5>平台</h5><a href="/about">关于我们</a><a href="/terms">服务条款</a></div>
+                <div class="col-md-2"><h5>交易</h5><a href="/market">交易市场</a><a href="/deposit">充值</a></div>
+                <div class="col-md-4"><h5>联系我们</h5><p><i class="fas fa-envelope me-2"></i>support@cointrade.com</p><p><i class="fas fa-phone me-2"></i>+86 400-888-8888</p></div>
+            </div>
+            <div class="text-center mt-4 pt-3 border-top border-secondary"><p class="mb-0">© 2024 CoinTrade. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ============================================
+        // 显示消息
+        // ============================================
+        function showMessage(message, type) {
+            const msg = document.getElementById('message');
+            msg.style.display = 'block';
+            msg.textContent = message;
+            msg.className = 'alert mb-3 ' + (type === 'success' ? 'alert-success' : 'alert-danger');
+            setTimeout(() => { msg.style.display = 'none'; }, 5000);
+        }
+
+        // ============================================
+        // 加载安全状态
+        // ============================================
+        async function loadSecurityStatus() {
+            try {
+                const fundRes = await fetch('/api/security/fund-password-status');
+                const fundData = await fundRes.json();
+                if (fundData.success) {
+                    const status = document.getElementById('fundStatus');
+                    if (fundData.enabled) {
+                        status.textContent = '已设置';
+                        status.className = 'status-badge enabled';
+                    } else {
+                        status.textContent = '未设置';
+                        status.className = 'status-badge disabled';
+                    }
+                }
+
+                const twofaRes = await fetch('/api/security/2fa-status');
+                const twofaData = await twofaRes.json();
+                if (twofaData.success) {
+                    const status = document.getElementById('twofaStatus');
+                    if (twofaData.enabled) {
+                        status.textContent = '已启用';
+                        status.className = 'status-badge enabled';
+                    } else {
+                        status.textContent = '未启用';
+                        status.className = 'status-badge disabled';
+                    }
+                }
+            } catch (error) {
+                console.error('加载安全状态失败:', error);
+            }
+        }
+
+        // ============================================
+        // 资金密码
+        // ============================================
+        function showFundPasswordModal() {
+            document.getElementById('fundPassword').value = '';
+            document.getElementById('fundPasswordConfirm').value = '';
+            document.getElementById('fundMsg').style.display = 'none';
+            new bootstrap.Modal(document.getElementById('fundPasswordModal')).show();
+        }
+
+        async function setFundPassword() {
+            const password = document.getElementById('fundPassword').value;
+            const confirm = document.getElementById('fundPasswordConfirm').value;
+            const msg = document.getElementById('fundMsg');
+
+            if (password.length < 6) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 密码至少6个字符';
+                msg.className = 'alert alert-danger';
+                return;
+            }
+            if (password !== confirm) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 两次密码不一致';
+                msg.className = 'alert alert-danger';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/security/fund-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    msg.style.display = 'block';
+                    msg.textContent = '✅ ' + data.message;
+                    msg.className = 'alert alert-success';
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('fundPasswordModal')).hide();
+                        loadSecurityStatus();
+                        showMessage('✅ 资金密码设置成功！', 'success');
+                    }, 1500);
+                } else {
+                    msg.style.display = 'block';
+                    msg.textContent = '❌ ' + data.message;
+                    msg.className = 'alert alert-danger';
+                }
+            } catch (error) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 网络错误，请重试';
+                msg.className = 'alert alert-danger';
+            }
+        }
+
+        // ============================================
+        // 谷歌验证器 (2FA)
+        // ============================================
+        let currentSecret = '';
+        let currentQrCode = '';
+
+        async function show2FAModal() {
+            const status = document.getElementById('twofaStatus').textContent;
+            const modal = new bootstrap.Modal(document.getElementById('twofaModal'));
+
+            if (status === '已启用') {
+                document.getElementById('twofaSetup').style.display = 'none';
+                document.getElementById('twofaDisable').style.display = 'block';
+                modal.show();
+                return;
+            }
+
+            document.getElementById('twofaSetup').style.display = 'block';
+            document.getElementById('twofaDisable').style.display = 'none';
+            document.getElementById('twofaMsg').style.display = 'none';
+            document.getElementById('twofaCode').value = '';
+            document.getElementById('qrCodeImage').src = '';
+            document.getElementById('twofaSecret').textContent = '加载中...';
+
+            try {
+                const response = await fetch('/api/security/2fa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: true })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    currentSecret = data.secret;
+                    currentQrCode = data.qrCode;
+                    document.getElementById('twofaSecret').textContent = data.secret;
+                    document.getElementById('qrCodeImage').src = data.qrCode;
+                    document.getElementById('qrCodeImage').onerror = function() {
+                        this.style.display = 'none';
+                        document.getElementById('qrCodeContainer').innerHTML += '<p class="text-danger">二维码加载失败，请手动输入密钥</p>';
+                    };
+                } else {
+                    showMessage('❌ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ 获取密钥失败，请重试', 'error');
+            }
+
+            modal.show();
+        }
+
+        function copySecret() {
+            const secret = document.getElementById('twofaSecret').textContent;
+            if (secret && secret !== '加载中...') {
+                navigator.clipboard.writeText(secret).then(() => {
+                    showMessage('✅ 密钥已复制到剪贴板', 'success');
+                }).catch(() => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = secret;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showMessage('✅ 密钥已复制到剪贴板', 'success');
+                });
+            } else {
+                showMessage('❌ 请等待密钥加载完成', 'error');
+            }
+        }
+
+        async function enable2FA() {
+            const code = document.getElementById('twofaCode').value;
+            const msg = document.getElementById('twofaMsg');
+
+            if (!code || code.length < 6) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 请输入6位验证码';
+                msg.className = 'alert alert-danger';
+                return;
+            }
+
+            if (!/^\d{6}$/.test(code)) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 请输入6位数字验证码';
+                msg.className = 'alert alert-danger';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/security/verify-2fa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    msg.style.display = 'block';
+                    msg.textContent = '✅ 2FA启用成功！';
+                    msg.className = 'alert alert-success';
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('twofaModal')).hide();
+                        loadSecurityStatus();
+                        showMessage('✅ 谷歌验证器(2FA)已启用！', 'success');
+                    }, 1500);
+                } else {
+                    msg.style.display = 'block';
+                    msg.textContent = '❌ ' + data.message;
+                    msg.className = 'alert alert-danger';
+                }
+            } catch (error) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 验证失败，请重试';
+                msg.className = 'alert alert-danger';
+            }
+        }
+
+        async function disable2FA() {
+            if (!confirm('确定要禁用2FA吗？这将降低账户安全性！')) return;
+
+            try {
+                const response = await fetch('/api/security/2fa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: false })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('twofaModal')).hide();
+                    loadSecurityStatus();
+                    showMessage('✅ 2FA已禁用', 'success');
+                } else {
+                    showMessage('❌ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ 操作失败，请重试', 'error');
+            }
+        }
+
+        // ============================================
+        // 页面加载
+        // ============================================
+        document.addEventListener('DOMContentLoaded', loadSecurityStatus);
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!-- ============================================ -->
+<!-- 手机端适配加强版 -->
+<!-- ============================================ -->
+<style>
+@media (max-width: 768px) {
+    .app-download { display: none !important; }
+    .lang-switcher { display: none !important; }
+
+    .navbar { padding: 8px 0 !important; }
+    .navbar-brand { font-size: 18px !important; }
+    .navbar-nav .nav-link {
+        font-size: 14px !important;
+        padding: 10px 15px !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    }
+
+    .welcome-banner {
+        padding: 20px 15px !important;
+        text-align: center !important;
+    }
+    .welcome-banner h3 { font-size: 18px !important; }
+    .welcome-banner p { font-size: 13px !important; }
+
+    .stat-card { padding: 12px !important; }
+    .stat-card .icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+    }
+    .stat-card .number {
+        font-size: 18px !important;
+        margin: 4px 0 2px !important;
+    }
+    .stat-card .label { font-size: 11px !important; }
+
+    .chart-container { padding: 12px !important; }
+    #klineChart { height: 220px !important; }
+
+    .pair-item {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+    }
+
+    .quick-card {
+        padding: 15px !important;
+        margin-bottom: 10px !important;
+    }
+    .quick-card i { font-size: 22px !important; }
+    .quick-card h6 { font-size: 14px !important; }
+
+    body { padding-bottom: 100px !important; }
+
+    .support-float {
+        padding: 10px 15px !important;
+        font-size: 13px !important;
+        bottom: 15px !important;
+        right: 15px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card .number { font-size: 16px !important; }
+    .stat-card .icon {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 12px !important;
+    }
+    .welcome-banner h3 { font-size: 16px !important; }
+    .navbar-brand { font-size: 16px !important; }
+}
+</style>
+
+<script>
+(function() {
+    function applyMobileFix() {
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.app-download').forEach(function(el) {
+                el.style.setProperty('display', 'none', 'important');
+            });
+            document.querySelectorAll('.lang-switcher').forEach(function(el) {
+                el.style.setProperty('display', 'none', 'important');
+            });
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(function(el) {
+                el.style.setProperty('font-size', '12px', 'important');
+                el.style.setProperty('padding', '6px 8px', 'important');
+            });
+            document.querySelectorAll('.stat-card .number').forEach(function(el) {
+                el.style.setProperty('font-size', '18px', 'important');
+            });
+            var k = document.getElementById('klineChart');
+            if (k) k.style.setProperty('height', '220px', 'important');
+            console.log('✅ 手机端适配已执行');
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyMobileFix);
+    } else {
+        applyMobileFix();
+    }
+})();
+</script>

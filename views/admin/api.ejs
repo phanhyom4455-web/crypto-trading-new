@@ -1,0 +1,34 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-code me-2 text-primary"></i>API管理</h4>
+        <button class="btn btn-primary"><i class="fas fa-plus me-1"></i>创建API</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead><tr><th>ID</th><th>API名称</th><th>路径</th><th>方法</th><th>调用次数</th><th>状态</th><th>操作</th></tr></thead>
+                <tbody>
+                    <% apis.forEach(api => { %>
+                    <tr>
+                        <td><%= api.id %></td>
+                        <td><%= api.name %></td>
+                        <td><code><%= api.path %></code></td>
+                        <td><span class="badge bg-<%= api.method === 'GET' ? 'success' : 'warning' %>"><%= api.method %></span></td>
+                        <td><%= api.calls %></td>
+                        <td><span class="badge bg-<%= api.status === 'active' ? 'success' : 'danger' %>"><%= api.status %></span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">编辑</button>
+                            <button class="btn btn-sm btn-outline-danger">删除</button>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

@@ -1,0 +1,97 @@
+<style>
+.faq-entry {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.faq-entry h6 { font-weight: 700; margin-bottom: 15px; }
+.faq-item {
+    border-bottom: 1px solid #f5f5f5;
+}
+.faq-question {
+    padding: 15px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+}
+.faq-question:hover { color: #667eea; }
+.faq-question i { margin-right: 10px; color: #667eea; }
+.faq-answer {
+    display: none;
+    padding: 0 0 15px 30px;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.8;
+}
+.faq-answer.show { display: block; }
+</style>
+
+<div class="faq-entry">
+    <h6><i class="fas fa-question-circle text-primary me-2"></i>常见问题</h6>
+    
+    <!-- 如何充值 -->
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            <span><i class="fas fa-chevron-right"></i> 如何充值？</span>
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="faq-answer">
+            <p><strong>第一步：</strong>登录您的账号</p>
+            <p><strong>第二步：</strong>点击导航栏的「充值」按钮</p>
+            <p><strong>第三步：</strong>选择充值方式（USDT / BTC / ETH）</p>
+            <p><strong>第四步：</strong>输入充值金额，点击「提交」</p>
+            <p><strong>第五步：</strong>转账到显示的地址，等待确认</p>
+        </div>
+    </div>
+    
+    <!-- 如何提现 -->
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            <span><i class="fas fa-chevron-right"></i> 如何提现？</span>
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="faq-answer">
+            <p><strong>第一步：</strong>登录您的账号</p>
+            <p><strong>第二步：</strong>点击导航栏的「提现」按钮</p>
+            <p><strong>第三步：</strong>选择提现方式（USDT / BTC / ETH）</p>
+            <p><strong>第四步：</strong>输入提现金额和地址</p>
+            <p><strong>第五步：</strong>点击「提交」，等待审核</p>
+        </div>
+    </div>
+    
+    <!-- 如何交易 -->
+    <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+            <span><i class="fas fa-chevron-right"></i> 如何交易？</span>
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="faq-answer">
+            <p><strong>第一步：</strong>登录您的账号</p>
+            <p><strong>第二步：</strong>点击导航栏的「行情」按钮</p>
+            <p><strong>第三步：</strong>选择交易对（如 BTC/USDT）</p>
+            <p><strong>第四步：</strong>选择买入或卖出</p>
+            <p><strong>第五步：</strong>输入价格和数量，点击「确认」</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFaq(element) {
+    const answer = element.nextElementSibling;
+    const icon = element.querySelector('.fa-plus');
+    
+    // 切换显示
+    answer.classList.toggle('show');
+    
+    // 切换图标
+    if (answer.classList.contains('show')) {
+        icon.className = 'fas fa-minus';
+    } else {
+        icon.className = 'fas fa-plus';
+    }
+}
+</script>

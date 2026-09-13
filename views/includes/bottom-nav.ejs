@@ -1,0 +1,98 @@
+<!-- ============================================ -->
+<!-- 手机端底部导航栏 -->
+<!-- ============================================ -->
+<nav class="bottom-nav">
+    <a href="/" class="bottom-nav-item" data-page="home">
+        <i class="fas fa-home"></i>
+        <span>首页</span>
+    </a>
+    <a href="/market" class="bottom-nav-item" data-page="market">
+        <i class="fas fa-chart-line"></i>
+        <span>行情</span>
+    </a>
+    <a href="/exchange" class="bottom-nav-item" data-page="exchange">
+        <i class="fas fa-exchange-alt"></i>
+        <span>兑换</span>
+    </a>
+    <a href="/deposit" class="bottom-nav-item" data-page="deposit">
+        <i class="fas fa-arrow-down"></i>
+        <span>充值</span>
+    </a>
+    <a href="/profile" class="bottom-nav-item" data-page="profile">
+        <i class="fas fa-user"></i>
+        <span>资产</span>
+    </a>
+</nav>
+
+<style>
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    z-index: 9999;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #6b7280;
+    font-size: 11px;
+    transition: 0.2s;
+    padding: 5px 0;
+}
+
+.bottom-nav-item i {
+    font-size: 20px;
+    margin-bottom: 3px;
+}
+
+.bottom-nav-item.active,
+.bottom-nav-item:hover {
+    color: #667eea;
+}
+
+@media (max-width: 768px) {
+    .bottom-nav {
+        display: flex;
+    }
+
+    body {
+        padding-bottom: 75px !important;
+    }
+}
+</style>
+
+<script>
+(function() {
+    var path = window.location.pathname;
+    var pageMap = {
+        '/': 'home',
+        '/market': 'market',
+        '/exchange': 'exchange',
+        '/deposit': 'deposit',
+        '/profile': 'profile',
+        '/assets': 'profile'
+    };
+    var currentPage = pageMap[path];
+
+    if (currentPage) {
+        document.querySelectorAll('.bottom-nav-item').forEach(function(item) {
+            if (item.getAttribute('data-page') === currentPage) {
+                item.classList.add('active');
+            }
+        });
+    }
+})();
+</script>

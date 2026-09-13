@@ -1,0 +1,334 @@
+<!-- ============================================ -->
+<!-- 总资产 + 期货板块 - 不修改原有代码 -->
+<!-- ============================================ -->
+
+<!-- ============================================ -->
+<!-- 1. 总资产板块 -->
+<!-- ============================================ -->
+<style>
+.assets-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.assets-section h5 {
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.assets-section .total-balance {
+    font-size: 36px;
+    font-weight: 800;
+    color: #667eea;
+}
+.assets-section .balance-label {
+    color: #6b7280;
+    font-size: 13px;
+}
+.assets-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+.assets-list .asset-item {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+}
+.assets-list .asset-item .amount {
+    font-size: 20px;
+    font-weight: 800;
+}
+.assets-list .asset-item .currency {
+    font-size: 12px;
+    color: #6b7280;
+}
+.assets-list .asset-item .usd {
+    font-size: 14px;
+    color: #667eea;
+    font-weight: 600;
+}
+@media (max-width: 768px) {
+    .assets-list { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
+<% if (user) { %>
+<div class="assets-section">
+    <h5>
+        <span><i class="fas fa-wallet text-primary me-2"></i>总资产</span>
+        <a href="/assets" class="btn btn-sm btn-outline-primary">查看明细</a>
+    </h5>
+    
+    <!-- 总余额 -->
+    <div class="text-center mb-3">
+        <div class="balance-label">总资产估值</div>
+        <div class="total-balance">$12,580.50</div>
+        <div class="balance-label">≈ 100,000 USDT</div>
+    </div>
+    
+    <!-- 资产列表 -->
+    <div class="assets-list">
+        <div class="asset-item">
+            <div class="amount">10,000</div>
+            <div class="currency">USDT</div>
+            <div class="usd">≈ $10,000</div>
+        </div>
+        <div class="asset-item">
+            <div class="amount">0.5</div>
+            <div class="currency">BTC</div>
+            <div class="usd">≈ $31,225</div>
+        </div>
+        <div class="asset-item">
+            <div class="amount">2.0</div>
+            <div class="currency">ETH</div>
+            <div class="usd">≈ $4,900</div>
+        </div>
+        <div class="asset-item">
+            <div class="amount">1,000</div>
+            <div class="currency">ADA</div>
+            <div class="usd">≈ $452</div>
+        </div>
+    </div>
+</div>
+<% } else { %>
+<div class="assets-section">
+    <h5>
+        <span><i class="fas fa-wallet text-primary me-2"></i>总资产</span>
+        <a href="/login" class="btn btn-sm btn-primary">登录查看</a>
+    </h5>
+    <p class="text-center text-muted py-3">请登录后查看您的资产</p>
+</div>
+<% } %>
+
+<!-- ============================================ -->
+<!-- 2. 期货板块 -->
+<!-- ============================================ -->
+<style>
+.futures-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.futures-section h5 {
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+.futures-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.futures-tabs button {
+    padding: 8px 20px;
+    border: 2px solid #e8ecf1;
+    background: #fff;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.futures-tabs button.active {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+.futures-list .futures-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+.futures-list .futures-item:last-child {
+    border-bottom: none;
+}
+.futures-list .pair-name {
+    font-weight: 700;
+    font-size: 15px;
+}
+.futures-list .pair-price {
+    font-weight: 700;
+    color: #333;
+}
+.futures-list .pair-change {
+    font-weight: 600;
+}
+.futures-list .pair-change.up {
+    color: #10b981;
+}
+.futures-list .pair-change.down {
+    color: #ef4444;
+}
+.futures-list .trade-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.futures-list .trade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+}
+</style>
+
+<div class="futures-section">
+    <h5><i class="fas fa-chart-line text-primary me-2"></i>永续合约</h5>
+    
+    <!-- 合约类型切换 -->
+    <div class="futures-tabs">
+        <button class="active" onclick="switchFutures('usdt')">USDT合约</button>
+        <button onclick="switchFutures('coin')">币本位合约</button>
+    </div>
+    
+    <!-- 合约列表 -->
+    <div class="futures-list" id="futuresList">
+        <div class="futures-item">
+            <div>
+                <div class="pair-name">BTC/USDT</div>
+                <div class="pair-price">$62,450</div>
+            </div>
+            <div>
+                <div class="pair-change up">+2.35%</div>
+                <div style="font-size:12px;color:#999;">24h成交量: 12.5K BTC</div>
+            </div>
+            <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+        </div>
+        
+        <div class="futures-item">
+            <div>
+                <div class="pair-name">ETH/USDT</div>
+                <div class="pair-price">$2,450</div>
+            </div>
+            <div>
+                <div class="pair-change down">-1.20%</div>
+                <div style="font-size:12px;color:#999;">24h成交量: 45.2K ETH</div>
+            </div>
+            <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+        </div>
+        
+        <div class="futures-item">
+            <div>
+                <div class="pair-name">ADA/USDT</div>
+                <div class="pair-price">$0.452</div>
+            </div>
+            <div>
+                <div class="pair-change up">+5.60%</div>
+                <div style="font-size:12px;color:#999;">24h成交量: 1.2M ADA</div>
+            </div>
+            <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+        </div>
+        
+        <div class="futures-item">
+            <div>
+                <div class="pair-name">DOT/USDT</div>
+                <div class="pair-price">$6.250</div>
+            </div>
+            <div>
+                <div class="pair-change up">+3.80%</div>
+                <div style="font-size:12px;color:#999;">24h成交量: 85K DOT</div>
+            </div>
+            <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+        </div>
+        
+        <div class="futures-item">
+            <div>
+                <div class="pair-name">SOL/USDT</div>
+                <div class="pair-price">$25.80</div>
+            </div>
+            <div>
+                <div class="pair-change up">+4.20%</div>
+                <div style="font-size:12px;color:#999;">24h成交量: 120K SOL</div>
+            </div>
+            <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+        </div>
+        
+        <div class="futures-item">
+            <div>
+                <div class="pair-name">AVAX/USDT</div>
+                <div class="pair-price">$14.20</div>
+            </div>
+            <div>
+                <div class="pair-change up">+6.80%</div>
+                <div style="font-size:12px;color:#999;">24h成交量: 65K AVAX</div>
+            </div>
+            <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchFutures(type) {
+    document.querySelectorAll('.futures-tabs button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (type === 'coin') {
+        // 切换为币本位合约数据（示例）
+        const list = document.getElementById('futuresList');
+        list.innerHTML = `
+            <div class="futures-item">
+                <div>
+                    <div class="pair-name">BTC/USD</div>
+                    <div class="pair-price">$62,450</div>
+                </div>
+                <div>
+                    <div class="pair-change up">+2.35%</div>
+                    <div style="font-size:12px;color:#999;">24h成交量: 8.5K BTC</div>
+                </div>
+                <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+            </div>
+            <div class="futures-item">
+                <div>
+                    <div class="pair-name">ETH/USD</div>
+                    <div class="pair-price">$2,450</div>
+                </div>
+                <div>
+                    <div class="pair-change down">-1.20%</div>
+                    <div style="font-size:12px;color:#999;">24h成交量: 32K ETH</div>
+                </div>
+                <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+            </div>
+        `;
+    } else {
+        // 切换回USDT合约
+        const list = document.getElementById('futuresList');
+        list.innerHTML = `
+            <div class="futures-item">
+                <div>
+                    <div class="pair-name">BTC/USDT</div>
+                    <div class="pair-price">$62,450</div>
+                </div>
+                <div>
+                    <div class="pair-change up">+2.35%</div>
+                    <div style="font-size:12px;color:#999;">24h成交量: 12.5K BTC</div>
+                </div>
+                <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+            </div>
+            <div class="futures-item">
+                <div>
+                    <div class="pair-name">ETH/USDT</div>
+                    <div class="pair-price">$2,450</div>
+                </div>
+                <div>
+                    <div class="pair-change down">-1.20%</div>
+                    <div style="font-size:12px;color:#999;">24h成交量: 45.2K ETH</div>
+                </div>
+                <button class="trade-btn" onclick="location.href='/trade?type=futures'">交易</button>
+            </div>
+        `;
+    }
+}
+</script>

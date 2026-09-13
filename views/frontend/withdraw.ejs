@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提现 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .navbar-brand { color: #fff !important; font-weight: 800; font-size: 24px; }
+        .navbar-brand i { margin-right: 10px; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; padding: 8px 18px !important; border-radius: 8px; }
+        .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.15); }
+        .nav-link i { margin-right: 6px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: none; padding: 8px; }
+        .dropdown-item { border-radius: 8px; padding: 10px 20px; }
+        .dropdown-item:hover { background: #f3f4f6; }
+        .dropdown-item i { width: 20px; margin-right: 10px; color: #667eea; }
+        .footer { background: #1a202c; color: rgba(255,255,255,0.7); padding: 40px 0; margin-top: 50px; }
+        .footer a { color: rgba(255,255,255,0.6); text-decoration: none; display: block; padding: 4px 0; }
+        .footer a:hover { color: #fff; }
+        .footer h5 { color: #fff; font-weight: 700; }
+        .withdraw-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); height: 100%; }
+        .section-title { text-align: center; margin-bottom: 40px; }
+        .section-title h2 { font-size: 36px; font-weight: 800; }
+        .section-title p { color: #6b7280; }
+        .form-control { border-radius: 10px; padding: 12px 16px; border: 2px solid #e5e7eb; }
+        .form-control:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); }
+        .btn-withdraw { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; border-radius: 10px; padding: 12px; font-weight: 600; color: #fff; width: 100%; }
+        .btn-withdraw:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245,158,11,0.4); }
+        .btn-withdraw:disabled { opacity: 0.6; cursor: not-allowed; }
+        .badge-status { padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-failed { background: #fee2e2; color: #991b1b; }
+        .spinner { display: none; }
+        .btn-withdraw.loading .spinner { display: inline-block; }
+        .btn-withdraw.loading .btn-text { display: none; }
+        .alert { border-radius: 10px; padding: 12px 16px; }
+        .alert-success { background: #d1fae5; color: #065f46; border: none; }
+        .alert-danger { background: #fee2e2; color: #991b1b; border: none; }
+        .alert-warning { background: #fef3c7; color: #92400e; border: none; }
+        .balance-info { background: #f8f9fa; border-radius: 10px; padding: 15px; }
+        .balance-info .amount { font-size: 24px; font-weight: 800; color: #1a202c; }
+        #fundPasswordModal .modal-content { border-radius: 16px; }
+        #fundPasswordModal .modal-header { border-bottom: none; }
+        #fundPasswordModal .modal-footer { border-top: none; }
+        .btn-fund-confirm { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; color: #fff; }
+        .btn-fund-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins"></i>CoinTrade</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market">行情</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/trade">交易</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit">充值</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/withdraw">提现</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/help">帮助</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <% if (user) { %>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle d-flex align-items-center gap-2" style="color: #fff; border: none; padding: 4px 12px;" data-bs-toggle="dropdown">
+                                <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                                <span><%= user.username %></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                                <li><a class="dropdown-item" href="/assets"><i class="fas fa-wallet"></i>资产明细</a></li>
+                                <li><a class="dropdown-item" href="/trade-history"><i class="fas fa-history"></i>交易记录</a></li>
+                                <li><a class="dropdown-item" href="/security"><i class="fas fa-shield-alt"></i>安全设置</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/api/logout"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-login" style="color:#fff;border:2px solid rgba(255,255,255,0.4);border-radius:50px;padding:8px 24px;background:transparent;">登录</a>
+                        <a href="/register" class="btn btn-register" style="background:#fff;color:#667eea;border:none;border-radius:50px;padding:8px 24px;font-weight:600;">注册</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="section-title">
+            <h2>提现</h2>
+            <p>安全快捷的提现服务</p>
+        </div>
+
+        <div id="message" style="display: none;" class="alert mb-3"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="withdraw-card">
+                    <h5 class="fw-bold mb-4"><i class="fas fa-arrow-up text-warning me-2"></i>提现信息</h5>
+
+                    <!-- 余额信息 -->
+                    <div class="balance-info mb-3">
+                        <small class="text-muted">可用余额</small>
+                        <div class="amount" id="availableBalance">$0.00</div>
+                        <small class="text-muted" id="balanceCurrency">USDT</small>
+                    </div>
+
+                    <form id="withdrawForm" onsubmit="submitWithdraw(event)">
+                        <div class="mb-3">
+                            <label class="fw-bold">提现币种</label>
+                            <select class="form-control" id="withdrawMethod" required>
+                                <option value="USDT">USDT (TRC20)</option>
+                                <option value="BTC">BTC</option>
+                                <option value="ETH">ETH</option>
+                                <option value="USDC">USDC (ERC20)</option>
+                              <option value="BANK">银行卡</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold">提现地址</label>
+                            <input type="text" class="form-control" id="withdrawAddress" placeholder="请输入提现地址" required>
+<div id="bankFields" style="display: none;">
+    <div class="mb-3">
+        <label class="fw-bold">持卡人姓名</label>
+        <input type="text" class="form-control" id="bankHolder" placeholder="请输入持卡人姓名">
+    </div>
+    <div class="mb-3">
+        <label class="fw-bold">开户行</label>
+        <input type="text" class="form-control" id="bankName" placeholder="如：中国工商银行">
+    </div>
+    <div class="mb-3">
+        <label class="fw-bold">银行卡号</label>
+        <input type="text" class="form-control" id="bankCard" placeholder="请输入银行卡号">
+    </div>
+</div>
+                        </div>
+                        <div class="mb-3">
+    <label class="fw-bold">提现金额</label>
+    <div style="position:relative;">
+        <input type="number" class="form-control" id="withdrawAmount" placeholder="请输入提现金额" min="1" step="0.01" required>
+        <button type="button" onclick="fillMaxAmount()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#f59e0b;font-weight:700;cursor:pointer;font-size:13px;">全部提现</button>
+    </div>
+    <small class="text-muted">最低提现: 10 USDT</small>
+</div>
+
+                        <button type="submit" class="btn-withdraw" id="withdrawBtn">
+                            <span class="spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                            <span class="btn-text"><i class="fas fa-arrow-up me-2"></i>提交提现申请</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="withdraw-card">
+                    <h5 class="fw-bold mb-4"><i class="fas fa-history me-2 text-primary"></i>提现记录</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>币种</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>
+                            <tbody id="withdrawList">
+                                <tr><td colspan="4" class="text-center text-muted py-3">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 资金密码弹窗 -->
+    <div class="modal fade" id="fundPasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-key text-warning me-2"></i>验证资金密码</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="fundMsg" style="display: none;" class="alert"></div>
+                    <p class="text-muted">为了您的资金安全，请输入资金密码</p>
+                    <div class="mb-3">
+                        <label class="fw-bold">资金密码</label>
+                        <input type="password" class="form-control" id="fundPassword" placeholder="请输入资金密码">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn-fund-confirm" onclick="confirmWithdraw()">
+                        <i class="fas fa-check"></i> 确认提现
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4"><h5><i class="fas fa-coins me-2"></i>CoinTrade</h5><p>专业的数字货币交易平台</p></div>
+                <div class="col-md-2"><h5>平台</h5><a href="/about">关于我们</a><a href="/terms">服务条款</a></div>
+                <div class="col-md-2"><h5>交易</h5><a href="/market">交易市场</a><a href="/deposit">充值</a></div>
+                <div class="col-md-4"><h5>联系我们</h5><p><i class="fas fa-envelope me-2"></i>support@cointrade.com</p><p><i class="fas fa-phone me-2"></i>+86 400-888-8888</p></div>
+            </div>
+            <div class="text-center mt-4 pt-3 border-top border-secondary"><p class="mb-0">© 2024 CoinTrade. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let withdrawData = null;
+                      async function fillMaxAmount() {
+            try {
+                var res = await fetch('/api/assets');
+                var data = await res.json();
+                var balance = 0;
+                if (data.success && data.assets) {
+                    var usdt = data.assets.find(function(a) { return a.currency === 'USDT'; });
+                    if (usdt) balance = parseFloat(usdt.balance) || 0;
+                }
+                // 保守取整：先减 0.01，再取整
+                var maxAmount = Math.floor((balance - 0.01) * 100) / 100;
+                if (maxAmount < 0) maxAmount = 0;
+                document.getElementById('withdrawAmount').value = maxAmount;
+            } catch (e) {
+                alert('获取余额失败');
+            }
+        }
+
+
+        function showMessage(message, type) {
+            const msg = document.getElementById('message');
+            msg.style.display = 'block';
+            msg.textContent = message;
+            msg.className = 'alert mb-3 ' + (type === 'success' ? 'alert-success' : (type === 'warning' ? 'alert-warning' : 'alert-danger'));
+            setTimeout(() => { msg.style.display = 'none'; }, 5000);
+        }
+
+        // 加载余额
+        async function loadBalance() {
+            try {
+                const response = await fetch('/api/assets');
+                const data = await response.json();
+                if (data.success && data.assets) {
+                    const usdt = data.assets.find(a => a.currency === 'USDT');
+                    if (usdt) {
+                        document.getElementById('availableBalance').textContent = '$' + parseFloat(usdt.balance).toFixed(2);
+                    }
+                }
+            } catch (error) {
+                console.log('加载余额失败');
+            }
+        }
+
+        // 加载提现记录
+        async function loadWithdrawals() {
+            try {
+                const response = await fetch('/api/withdrawals');
+                const data = await response.json();
+                const tbody = document.getElementById('withdrawList');
+
+                if (data.success && data.withdrawals && data.withdrawals.length > 0) {
+                    let html = '';
+                    data.withdrawals.forEach(w => {
+                        const statusMap = {
+                            'pending': '<span class="badge-status badge-pending">审核中</span>',
+                            'completed': '<span class="badge-status badge-completed">已完成</span>',
+                            'failed': '<span class="badge-status badge-failed">已拒绝</span>'
+                        };
+                        html += `<tr><td>${w.method || 'USDT'}</td><td>${w.amount}</td><td>${statusMap[w.status] || statusMap.pending}</td><td>${new Date(w.created_at).toLocaleString()}</td></tr>`;
+                    });
+                    tbody.innerHTML = html;
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">暂无提现记录</td></tr>`;
+                }
+            } catch (error) {
+                console.log('加载提现记录失败');
+            }
+        }
+
+        // 提交提现
+        async function submitWithdraw(event) {
+            event.preventDefault();
+
+            <% if (!user) { %>
+                if (confirm('请先登录才能提现！\n是否前往登录？')) {
+                    window.location.href = '/login';
+                }
+                return;
+            <% } %>
+
+                        const method = document.getElementById('withdrawMethod').value;
+            let address = '';
+            let bankHolder = '';
+            let bankName = '';
+            let bankCard = '';
+
+            if (method === 'BANK') {
+                bankHolder = document.getElementById('bankHolder').value.trim();
+                bankName = document.getElementById('bankName').value.trim();
+                bankCard = document.getElementById('bankCard').value.trim();
+
+                if (!bankHolder || bankHolder.length < 2) {
+                    showMessage('请输入持卡人姓名', 'error');
+                    return;
+                }
+                if (!bankName) {
+                    showMessage('请输入开户行', 'error');
+                    return;
+                }
+                if (!bankCard || bankCard.length < 10) {
+                    showMessage('请输入正确的银行卡号', 'error');
+                    return;
+                }
+                address = bankHolder + ' | ' + bankName + ' | ' + bankCard;
+            } else {
+                address = document.getElementById('withdrawAddress').value.trim();
+                if (!address || address.length < 10) {
+                    showMessage('请输入正确的提现地址（至少10个字符）', 'error');
+                    return;
+                }
+            }
+
+            let amount = document.getElementById('withdrawAmount').value;
+            const btn = document.getElementById('withdrawBtn');
+                      
+            // 检查是否设置资金密码
+            try {
+                const fundRes = await fetch('/api/security/fund-password-status');
+                const fundData = await fundRes.json();
+                if (!fundData.enabled) {
+                    showMessage('⚠️ 请先设置资金密码！前往 个人中心 → 安全设置', 'warning');
+                    return;
+                }
+            } catch (error) {
+                showMessage('检查资金密码失败', 'error');
+                return;
+            }
+
+            // 保存提现数据，显示资金密码弹窗
+            withdrawData = { method, address, amount };
+            document.getElementById('fundPassword').value = '';
+            document.getElementById('fundMsg').style.display = 'none';
+            new bootstrap.Modal(document.getElementById('fundPasswordModal')).show();
+        }
+
+        // 确认提现（验证资金密码后）
+        async function confirmWithdraw() {
+            const password = document.getElementById('fundPassword').value;
+            const msg = document.getElementById('fundMsg');
+
+            if (!password) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 请输入资金密码';
+                msg.className = 'alert alert-danger';
+                return;
+            }
+
+            // 验证资金密码
+            try {
+                const verifyRes = await fetch('/api/security/verify-fund-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                const verifyData = await verifyRes.json();
+
+                if (!verifyData.success) {
+                    msg.style.display = 'block';
+                    msg.textContent = '❌ ' + verifyData.message;
+                    msg.className = 'alert alert-danger';
+                    return;
+                }
+            } catch (error) {
+                msg.style.display = 'block';
+                msg.textContent = '❌ 验证失败，请重试';
+                msg.className = 'alert alert-danger';
+                return;
+            }
+
+            // 提交提现
+            try {
+                const response = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: withdrawData.method,
+                        address: withdrawData.address,
+                        amount: withdrawData.amount
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('fundPasswordModal')).hide();
+                    showMessage('✅ ' + data.message, 'success');
+                    document.getElementById('withdrawAddress').value = '';
+                    document.getElementById('withdrawAmount').value = '';
+                    loadBalance();
+                    loadWithdrawals();
+                } else {
+                    showMessage('❌ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ 网络错误，请重试', 'error');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBalance();
+            loadWithdrawals();
+        });
+        document.getElementById('withdrawMethod').addEventListener('change', function() {
+        var bankFields = document.getElementById('bankFields');
+        var addrInput = document.getElementById('withdrawAddress');
+        if (this.value === 'BANK') {
+            bankFields.style.display = 'block';
+            addrInput.style.display = 'none';
+            addrInput.removeAttribute('required');   // 去掉必填
+        } else {
+            bankFields.style.display = 'none';
+            addrInput.style.display = 'block';
+            addrInput.setAttribute('required', 'required');   // 加回必填
+        }
+    });
+    </script>
+<%- include('../includes/bottom-nav') %>
+
+
+</html>
+</body>
+</html>

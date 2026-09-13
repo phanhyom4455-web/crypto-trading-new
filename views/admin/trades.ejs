@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交易管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+        .admin-header { background: #1a1a2e; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-header a { color: #aaa; text-decoration: none; }
+        .admin-header a:hover { color: white; }
+        .sidebar { background: white; width: 200px; min-height: calc(100vh - 70px); padding: 20px 0; border-right: 1px solid #e8ecf1; position: fixed; left: 0; top: 70px; bottom: 0; overflow-y: auto; }
+        .sidebar a { display: block; padding: 10px 24px; color: #333; text-decoration: none; font-size: 13px; }
+        .sidebar a:hover { background: #f0f2f5; }
+        .sidebar a.active { background: #667eea; color: white; }
+        .sidebar .section-title { padding: 8px 24px; font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; }
+        .main { margin-left: 200px; padding: 24px; }
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e8ecf1; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-badge.win { background: #e8f8f0; color: #27ae60; }
+        .status-badge.loss { background: #fee; color: #e74c3c; }
+        .status-badge.pending { background: #fef9e7; color: #7d6608; }
+        .btn { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-sm { padding: 4px 10px; font-size: 11px; margin: 2px; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-primary { background: #667eea; color: white; }
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 8px; }
+        .controls select, .controls input { padding: 8px 12px; border: 2px solid #e8ecf1; border-radius: 8px; font-size: 14px; }
+        .controls .btn { padding: 8px 20px; }
+        .stat-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-item { background: white; padding: 16px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .stat-item .num { font-size: 24px; font-weight: 700; }
+        .stat-item .label { font-size: 12px; color: #888; margin-top: 4px; }
+        .stat-item.win .num { color: #27ae60; }
+        .stat-item.loss .num { color: #e74c3c; }
+        .profit-positive { color: #27ae60; font-weight: 600; }
+        .profit-negative { color: #e74c3c; font-weight: 600; }
+        .empty { text-align: center; color: #999; padding: 40px 0; }
+        .control-hint { background: #e8f0fe; padding: 10px 16px; border-radius: 8px; font-size: 13px; color: #1a1a2e; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h2>🔐 管理后台</h2>
+        <div class="user-info">
+            <span>👋 <%= user.username %></span>
+            <a href="/admin/logout">退出</a>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <div class="section-title">📊 核心功能</div>
+        <a href="/admin/dashboard">📊 控制台</a>
+        <a href="/admin/users">👤 用户管理</a>
+        <a href="/admin/deposits">💰 充值管理</a>
+        <a href="/admin/withdrawals">🏦 取款管理</a>
+        <a href="/admin/trades" class="active">📈 交易管理</a>
+
+        <div class="section-title">📢 内容管理</div>
+        <a href="/admin/announcements">📢 公告管理</a>
+        <a href="/admin/notifications">📨 通知管理</a>
+
+        <div class="section-title">📊 数据统计</div>
+        <a href="/admin/finance">💰 财务统计</a>
+        <a href="/admin/earnings">📈 收益统计</a>
+        <a href="/admin/ranking">🏆 用户排行</a>
+        <a href="/admin/export">📊 导出报表</a>
+
+        <div class="section-title">🛡️ 安全与风控</div>
+        <a href="/admin/risk-control">🛡️ 风控管理</a>
+        <a href="/admin/login-logs">📋 登录日志</a>
+        <a href="/admin/backup">💾 数据备份</a>
+
+        <div class="section-title">🎫 客服支持</div>
+        <a href="/admin/tickets">🎫 工单管理</a>
+        <a href="/admin/feedbacks">💬 用户反馈</a>
+
+        <div class="section-title">🔑 系统管理</div>
+        <a href="/admin/api">🔑 API管理</a>
+        <a href="/admin/monitor">📊 系统监控</a>
+        <a href="/admin/settings">⚙️ 系统设置</a>
+        <a href="/admin/logs">📋 操作日志</a>
+    </nav>
+
+    <div class="main">
+        <h2 style="margin-bottom:16px;">📈 交易管理 - 控制输赢</h2>
+        <div class="control-hint">💡 <strong>操作说明：</strong> 每笔订单可以单独控制 <strong>"盈利"</strong> 或 <strong>"亏损"</strong>，也可以批量控制。控制后用户余额会自动更新。</div>
+
+        <div class="stat-summary">
+            <div class="stat-item"><div class="num"><%= stats.totalTrades || 0 %></div><div class="label">📊 总交易</div></div>
+            <div class="stat-item win"><div class="num"><%= stats.winCount || 0 %></div><div class="label">✅ 盈利</div></div>
+            <div class="stat-item loss"><div class="num"><%= stats.lossCount || 0 %></div><div class="label">❌ 亏损</div></div>
+            <div class="stat-item"><div class="num"><%= stats.winRate || 0 %>%</div><div class="label">📊 胜率</div></div>
+        </div>
+
+        <div class="card">
+            <div class="controls">
+                <span style="font-weight:600;">🎮 批量控制：</span>
+                <select id="resultControl">
+                    <option value="">选择结果</option>
+                    <option value="win">✅ 盈利</option>
+                    <option value="loss">❌ 亏损</option>
+                </select>
+                <input type="number" id="profitControl" placeholder="盈亏金额" step="0.01" style="width:120px;">
+                <button class="btn btn-primary" onclick="applyToSelected()">应用到选中</button>
+                <button class="btn btn-warning" onclick="selectAll()">全选</button>
+                <button class="btn btn-success" onclick="location.reload()">🔄 刷新</button>
+                <span style="font-size:12px;color:#888;margin-left:auto;">已选: <span id="selectedCount">0</span> 笔</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:30px;"><input type="checkbox" id="selectAll" onchange="toggleAll()"></th>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>类型</th>
+                            <th>交易对</th>
+                            <th>价格</th>
+                            <th>数量</th>
+                            <th>总额</th>
+                            <th>盈亏</th>
+                            <th>状态</th>
+                            <th>时间</th>
+                            <th style="min-width:150px;">🎮 控制输赢</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (trades && trades.length > 0) { %>
+                            <% trades.forEach(function(trade) { %>
+                                <tr style="<%= trade.result === 'win' ? 'background:#f0fff4;' : trade.result === 'loss' ? 'background:#fff5f5;' : '' %>">
+                                    <td><input type="checkbox" class="trade-checkbox" value="<%= trade.id %>" <%= trade.result && trade.result !== 'pending' ? 'disabled' : '' %>></td>
+                                    <td><%= trade.id %></td>
+                                    <td><strong><%= trade.username || '--' %></strong></td>
+                                    <td><%= trade.type === 'buy' ? '📈 买入' : '📉 卖出' %></td>
+                                    <td><%= trade.symbol %></td>
+                                    <td><%= trade.price %></td>
+                                    <td><%= trade.amount %></td>
+                                    <td><%= trade.total ? trade.total.toFixed(2) : '0.00' %></td>
+                                    <td class="<%= trade.profit > 0 ? 'profit-positive' : trade.profit < 0 ? 'profit-negative' : '' %>">
+                                        <%= trade.profit > 0 ? '+' : '' %><%= trade.profit ? trade.profit.toFixed(2) : '0.00' %>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge <%= trade.result || 'pending' %>">
+                                            <%= trade.result === 'win' ? '✅ 盈利' : trade.result === 'loss' ? '❌ 亏损' : '⏳ 待定' %>
+                                        </span>
+                                    </td>
+                                    <td style="font-size:12px;color:#888;"><%= new Date(trade.created_at).toLocaleString() %></td>
+                                    <td>
+                                        <% if (!trade.result || trade.result === 'pending') { %>
+                                            <button class="btn btn-success btn-sm" onclick="setResult(<%= trade.id %>, 'win', <%= trade.total %>)">💰 盈利</button>
+                                            <button class="btn btn-danger btn-sm" onclick="setResult(<%= trade.id %>, 'loss', <%= trade.total %>)">💸 亏损</button>
+                                        <% } else { %>
+                                            <span style="color:#888;font-size:12px;">✅ 已控制</span>
+                                            <span style="font-size:11px;color:#888;">(<%= trade.result === 'win' ? '盈利' : '亏损' %>)</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr><td colspan="12" class="empty">📭 暂无交易记录</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var selectedIds = [];
+        function toggleAll() {
+            var checked = document.getElementById('selectAll').checked;
+            var checkboxes = document.querySelectorAll('.trade-checkbox:not(:disabled)');
+            for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = checked; }
+            updateSelected();
+        }
+        function updateSelected() {
+            selectedIds = [];
+            var checkboxes = document.querySelectorAll('.trade-checkbox:checked');
+            for (var i = 0; i < checkboxes.length; i++) { selectedIds.push(parseInt(checkboxes[i].value)); }
+            document.getElementById('selectedCount').textContent = selectedIds.length;
+        }
+        function selectAll() {
+            var checkboxes = document.querySelectorAll('.trade-checkbox:not(:disabled)');
+            for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = true; }
+            updateSelected();
+        }
+        var allCheckboxes = document.querySelectorAll('.trade-checkbox');
+        for (var i = 0; i < allCheckboxes.length; i++) {
+            allCheckboxes[i].addEventListener('change', updateSelected);
+        }
+        async function setResult(id, result, total) {
+            var action = result === 'win' ? '盈利' : '亏损';
+            if (!confirm('确认修改订单 #' + id + ' 为 "' + action + '" 吗？')) return;
+            var rate = 0.05 + Math.random() * 0.15;
+            var profit = result === 'win' ? total * rate : -total * rate;
+            try {
+                var response = await fetch('/admin/trades/result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trade_id: id, result: result, profit: profit.toFixed(2) })
+                });
+                var data = await response.json();
+                if (data.success) { alert('✅ 操作成功！'); location.reload(); }
+                else { alert('❌ 操作失败：' + data.message); }
+            } catch (e) { alert('❌ 请求失败：' + e.message); }
+        }
+        async function applyToSelected() {
+            var result = document.getElementById('resultControl').value;
+            var profit = parseFloat(document.getElementById('profitControl').value);
+            if (!result) { alert('请选择结果（盈利/亏损）'); return; }
+            if (selectedIds.length === 0) { alert('请至少选择一笔订单'); return; }
+            if (isNaN(profit) || profit <= 0) { alert('请输入有效的盈亏金额（大于0）'); return; }
+            var action = result === 'win' ? '盈利' : '亏损';
+            var finalProfit = result === 'win' ? profit : -profit;
+            if (!confirm('确认对 ' + selectedIds.length + ' 笔订单执行 "' + action + '" ' + profit + ' USDT 吗？')) return;
+            try {
+                var response = await fetch('/admin/trades/batch-result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trade_ids: selectedIds, result: result, profit: finalProfit })
+                });
+                var data = await response.json();
+                if (data.success) { alert('✅ 操作成功！共处理 ' + data.count + ' 笔订单'); location.reload(); }
+                else { alert('❌ 操作失败：' + data.message); }
+            } catch (e) { alert('❌ 请求失败：' + e.message); }
+        }
+        updateSelected();
+    </script>
+</body>
+</html>

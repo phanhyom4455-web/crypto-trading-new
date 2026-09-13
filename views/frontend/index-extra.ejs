@@ -1,0 +1,316 @@
+<!-- ============================================ -->
+<!-- 首页额外增强功能 - 不修改原有代码 -->
+<!-- ============================================ -->
+
+<!-- ============================================ -->
+<!-- 1. 买卖盘口（深度图） -->
+<!-- ============================================ -->
+<style>
+.order-book {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.order-book h6 {
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+.order-book .sell-row, .order-book .buy-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #f5f5f5;
+}
+.order-book .sell-row .price {
+    color: #ef4444;
+    font-weight: 600;
+}
+.order-book .buy-row .price {
+    color: #10b981;
+    font-weight: 600;
+}
+.order-book .amount {
+    color: #666;
+}
+.order-book .current-price {
+    text-align: center;
+    padding: 15px 0;
+    border-top: 2px solid #eee;
+    border-bottom: 2px solid #eee;
+    margin: 10px 0;
+}
+.order-book .current-price .price {
+    font-size: 28px;
+    font-weight: 800;
+    color: #10b981;
+}
+.order-book .current-price .label {
+    font-size: 12px;
+    color: #999;
+}
+</style>
+
+<div class="order-book">
+    <h6><i class="fas fa-book-open text-primary me-2"></i>实时盘口</h6>
+    
+    <!-- 卖单 -->
+    <div class="sell-orders">
+        <div class="sell-row"><span class="price">$62,500</span><span class="amount">0.25 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,480</span><span class="amount">0.12 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,460</span><span class="amount">0.35 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,440</span><span class="amount">0.18 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,420</span><span class="amount">0.22 BTC</span></div>
+    </div>
+    
+    <!-- 当前价格 -->
+    <div class="current-price">
+        <span class="price">$62,450</span>
+        <span class="label">当前价格</span>
+    </div>
+    
+    <!-- 买单 -->
+    <div class="buy-orders">
+        <div class="buy-row"><span class="price">$62,430</span><span class="amount">0.15 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,410</span><span class="amount">0.28 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,390</span><span class="amount">0.45 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,370</span><span class="amount">0.12 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,350</span><span class="amount">0.32 BTC</span></div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 2. 24小时成交量 -->
+<!-- ============================================ -->
+<style>
+.volume-stats {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.volume-stats h6 {
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+.volume-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+.volume-row:last-child {
+    border-bottom: none;
+}
+.volume-row .pair {
+    font-weight: 600;
+}
+.volume-row .vol {
+    color: #666;
+    font-size: 13px;
+}
+.volume-row .change.up {
+    color: #10b981;
+    font-weight: 600;
+}
+.volume-row .change.down {
+    color: #ef4444;
+    font-weight: 600;
+}
+</style>
+
+<div class="volume-stats">
+    <h6><i class="fas fa-chart-bar text-primary me-2"></i>24小时成交量</h6>
+    <div class="volume-row">
+        <span class="pair">BTC/USDT</span>
+        <span class="vol">12.5K BTC</span>
+        <span class="change up">▲+2.35%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">ETH/USDT</span>
+        <span class="vol">45.2K ETH</span>
+        <span class="change down">▼-1.20%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">ADA/USDT</span>
+        <span class="vol">1.2M ADA</span>
+        <span class="change up">▲+5.60%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">DOT/USDT</span>
+        <span class="vol">85K DOT</span>
+        <span class="change up">▲+3.80%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">SOL/USDT</span>
+        <span class="vol">120K SOL</span>
+        <span class="change up">▲+4.20%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">AVAX/USDT</span>
+        <span class="vol">65K AVAX</span>
+        <span class="change up">▲+6.80%</span>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 3. 公告栏 -->
+<!-- ============================================ -->
+<style>
+.announcement-bar {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+.announcement-bar i {
+    margin-right: 8px;
+}
+</style>
+
+<div class="announcement-bar">
+    <i class="fas fa-bullhorn"></i>
+    <marquee behavior="scroll" direction="left">
+        🔔 系统升级维护通知 | 🎉 中秋充值送积分活动 | 📢 新增ADA/USDT交易对 | 💰 新用户注册送100积分 | 📈 BTC突破$65,000
+    </marquee>
+</div>
+
+<!-- ============================================ -->
+<!-- 4. 多语言切换 -->
+<!-- ============================================ -->
+<style>
+.lang-switcher {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    gap: 5px;
+}
+.lang-switcher button {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.lang-switcher button.active {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+</style>
+
+<div class="lang-switcher">
+    <button class="active">中文</button>
+    <button>EN</button>
+    <button>ລາວ</button>
+</div>
+
+<!-- ============================================ -->
+<!-- 5. App下载二维码 -->
+<!-- ============================================ -->
+<style>
+.app-download {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    z-index: 999;
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    text-align: center;
+}
+.app-download img {
+    width: 100px;
+    height: 100px;
+}
+.app-download p {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0 0;
+}
+</style>
+
+<div class="app-download">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://example.com/app" alt="App下载">
+    <p>扫码下载App</p>
+</div>
+
+<!-- ============================================ -->
+<!-- 6. 合作伙伴/媒体报道 -->
+<!-- ============================================ -->
+<style>
+.partners {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.partners h6 {
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.partners .partner-logos {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    opacity: 0.7;
+}
+.partners .partner-logos span {
+    font-size: 18px;
+    font-weight: 700;
+    color: #999;
+}
+</style>
+
+<div class="partners">
+    <h6><i class="fas fa-handshake text-primary me-2"></i>合作伙伴</h6>
+    <div class="partner-logos">
+        <span>🔷 Binance</span>
+        <span>🟢 Coinbase</span>
+        <span>🟠 OKX</span>
+        <span>🔴 Bybit</span>
+        <span>🟣 Kraken</span>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 7. 客服悬浮窗 -->
+<!-- ============================================ -->
+<style>
+.support-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.support-float:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+    color: #fff;
+}
+</style>
+
+<a href="/support" target="_blank" class="support-float">
+    <i class="fas fa-headset me-2"></i>客服
+</a>

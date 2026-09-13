@@ -1,0 +1,226 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid">
+    <div class="row">
+        <%- include('../includes/admin-sidebar') %>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-chart-line me-2"></i>市场控制</h1>
+                <button class="btn btn-primary" onclick="addPair()"><i class="fas fa-plus"></i> 添加交易对</button>
+            </div>
+
+            <!-- 当前价格 -->
+            <div class="row g-3 mb-4" id="marketCards">
+                <!-- 动态加载 -->
+            </div>
+
+            <!-- 编辑弹窗 -->
+            <div class="modal fade" id="editModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-edit me-2"></i>设置价格</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="editId">
+                            <div class="mb-3">
+                                <label class="fw-bold">交易对</label>
+                                <input type="text" class="form-control" id="editPair" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">当前价格</label>
+                                <input type="number" class="form-control" id="editPrice" step="0.01">
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">涨跌方向</label>
+                                <select class="form-control" id="editDirection">
+                                    <option value="up">📈 上涨</option>
+                                    <option value="down">📉 下跌</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">涨跌幅 (%)</label>
+                                <input type="number" class="form-control" id="editChange" step="0.01">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="savePrice()">
+                                <i class="fas fa-save"></i> 保存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 交易记录 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <i class="fas fa-list me-2"></i>交易记录
+                    <span class="badge bg-info ms-2" id="tradeCount">0</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>用户</th>
+                                    <th>交易对</th>
+                                    <th>类型</th>
+                                    <th>价格</th>
+                                    <th>数量</th>
+                                    <th>总金额</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradeList">
+                                <tr><td colspan="8" class="text-center text-muted py-4">暂无交易记录</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 加载市场数据
+    async function loadMarketData() {
+        try {
+            const response = await fetch('/api/market-data');
+            const data = await response.json();
+            if (data.success) {
+                renderMarketCards(data.data);
+            }
+        } catch (error) {
+            console.error('加载市场数据失败:', error);
+        }
+    }
+
+    function renderMarketCards(data) {
+        const container = document.getElementById('marketCards');
+        let html = '';
+        data.forEach(item => {
+            const changeColor = item.change >= 0 ? 'text-success' : 'text-danger';
+            const changeIcon = item.change >= 0 ? '📈' : '📉';
+            html += `
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="fw-bold">${item.pair}</h6>
+                            <h3>$${item.price}</h3>
+                            <p class="${changeColor}">${changeIcon} ${item.change}%</p>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editPrice(${item.id}, '${item.pair}', ${item.price}, '${item.direction}', ${item.change})">
+                                <i class="fas fa-edit"></i> 设置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // 加载交易记录
+    async function loadTrades() {
+        try {
+            const response = await fetch('/api/trades');
+            const data = await response.json();
+            const tbody = document.getElementById('tradeList');
+            if (data.success && data.trades && data.trades.length > 0) {
+                let html = '';
+                data.trades.forEach(t => {
+                    html += `
+                        <tr>
+                            <td><strong>${t.username}</strong></td>
+                            <td>${t.pair}</td>
+                            <td><span class="badge ${t.type === 'buy' ? 'bg-success' : 'bg-danger'}">${t.type === 'buy' ? '买入' : '卖出'}</span></td>
+                            <td>$${parseFloat(t.price).toFixed(2)}</td>
+                            <td>${parseFloat(t.amount).toFixed(4)}</td>
+                            <td>$${parseFloat(t.total).toFixed(2)}</td>
+                            <td><span class="badge bg-success">已完成</span></td>
+                            <td>${new Date(t.created_at).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+                document.getElementById('tradeCount').textContent = data.trades.length;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">暂无交易记录</td></tr>`;
+            }
+        } catch (error) {
+            console.error('加载交易记录失败:', error);
+        }
+    }
+
+    // 编辑价格
+    function editPrice(id, pair, price, direction, change) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editPair').value = pair;
+        document.getElementById('editPrice').value = price;
+        document.getElementById('editDirection').value = direction;
+        document.getElementById('editChange').value = change;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    // 保存价格
+    async function savePrice() {
+        const id = document.getElementById('editId').value;
+        const price = document.getElementById('editPrice').value;
+        const direction = document.getElementById('editDirection').value;
+        const change = document.getElementById('editChange').value;
+
+        try {
+            const response = await fetch('/api/admin/market-control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, price, direction, change })
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                loadMarketData();
+            }
+        } catch (error) {
+            alert('操作失败，请重试');
+        }
+    }
+
+    // 添加交易对
+    async function addPair() {
+        const pair = prompt('请输入交易对名称（如：BTC/USDT）');
+        if (!pair) return;
+        const price = prompt('请输入初始价格');
+        if (!price) return;
+
+        try {
+            const response = await fetch('/api/admin/market-control/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pair, price })
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) loadMarketData();
+        } catch (error) {
+            alert('添加失败，请重试');
+        }
+    }
+
+    // 自动刷新（每5秒）
+    setInterval(() => {
+        loadMarketData();
+        loadTrades();
+    }, 5000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadMarketData();
+        loadTrades();
+    });
+</script>
+</body>
+</html>

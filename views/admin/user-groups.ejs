@@ -1,0 +1,27 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-layer-group me-2 text-primary"></i>用户分组</h4>
+        <button class="btn btn-primary"><i class="fas fa-plus me-1"></i>新建分组</button>
+    </div>
+
+    <div class="row">
+        <% groups.forEach(group => { %>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5><%= group.name %></h5>
+                    <p class="text-muted">等级: <%= group.level %></p>
+                    <p>用户数: <strong><%= group.count %></strong></p>
+                    <p>权益: <%= group.benefits %></p>
+                    <button class="btn btn-sm btn-outline-primary">编辑</button>
+                    <button class="btn btn-sm btn-outline-danger">删除</button>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

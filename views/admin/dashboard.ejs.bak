@@ -1,0 +1,101 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid">
+    <div class="row">
+        <%- include('../includes/admin-sidebar') %>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-chart-pie me-2"></i>控制台</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="/admin/reset-password" class="btn btn-sm btn-warning">
+                            <i class="fas fa-key me-1"></i>重置密码
+                        </a>
+                        <a href="/admin/user-security" class="btn btn-sm btn-info">
+                            <i class="fas fa-user-shield me-1"></i>用户安全设置
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white p-3">
+                        <div class="card-body">
+                            <h6 class="text-white-50">总用户</h6>
+                            <h2 class="mb-0"><%= stats.totalUsers %></h2>
+                            <small>今日新增 +<%= stats.newUsers %></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white p-3">
+                        <div class="card-body">
+                            <h6 class="text-white-50">总充值</h6>
+                            <h2 class="mb-0">¥<%= stats.totalDeposits.toFixed(0) %></h2>
+                            <small>今日 ¥<%= stats.todayDeposits.toFixed(2) %></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white p-3">
+                        <div class="card-body">
+                            <h6 class="text-white-50">总取款</h6>
+                            <h2 class="mb-0">¥<%= stats.totalWithdrawals.toFixed(0) %></h2>
+                            <small>今日 ¥<%= stats.todayWithdrawals.toFixed(2) %></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white p-3">
+                        <div class="card-body">
+                            <h6 class="text-white-50">待处理</h6>
+                            <h2 class="mb-0"><%= stats.pendingDeposits + stats.pendingWithdrawals %></h2>
+                            <small>充值 <%= stats.pendingDeposits %> / 取款 <%= stats.pendingWithdrawals %></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二行 -->
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <div class="card-body">
+                            <h6 class="text-muted">在线用户</h6>
+                            <h2 class="mb-0"><%= stats.onlineUsers %></h2>
+                            <span class="badge bg-success"><i class="fas fa-circle me-1"></i>在线</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <div class="card-body">
+                            <h6 class="text-muted">今日交易</h6>
+                            <h2 class="mb-0"><%= stats.todayTransactions %></h2>
+                            <small class="text-muted">本月 <strong><%= stats.monthlyTransactions %></strong> 笔</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <div class="card-body">
+                            <h6 class="text-muted">系统负载</h6>
+                            <h2 class="mb-0"><%= stats.systemLoad %>%</h2>
+                            <span class="text-success">运行正常</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 欢迎信息 -->
+            <div class="mt-4 p-4 bg-white rounded-3 shadow-sm">
+                <h5><i class="fas fa-hand-wave me-2 text-warning"></i>欢迎回来，admin</h5>
+                <p class="text-muted mb-0">今天是 <%= new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) %></p>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

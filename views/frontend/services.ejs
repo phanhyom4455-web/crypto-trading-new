@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 15px 0; box-shadow: 0 4px 20px rgba(102,126,234,0.3); }
+        .navbar-brand, .nav-link { color: #fff !important; }
+        .nav-link:hover { opacity: 0.8; }
+        .footer { background: #1a202c; color: rgba(255,255,255,0.7); padding: 40px 0; margin-top: 50px; }
+        .footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+        .footer a:hover { color: #fff; }
+        .service-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: 0.3s; height: 100%; text-align: center; }
+        .service-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(102,126,234,0.15); }
+        .service-card .icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; color: #fff; }
+        .bg-primary-gradient { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .bg-success-gradient { background: linear-gradient(135deg, #10b981, #059669); }
+        .bg-warning-gradient { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .bg-danger-gradient { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .bg-info-gradient { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .bg-purple-gradient { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .section-title { text-align: center; margin-bottom: 40px; }
+        .section-title h2 { font-size: 36px; font-weight: 800; }
+        .section-title p { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins me-2"></i>CoinTrade</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market">行情</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit">充值</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/withdraw">提现</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/help">帮助</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">关于</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/login">登录</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-light text-primary px-4 rounded-pill" href="/register">注册</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="section-title">
+            <h2>我们的服务</h2>
+            <p>专业的数字资产交易服务</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="icon bg-primary-gradient"><i class="fas fa-exchange-alt"></i></div>
+                    <h5 class="fw-bold">数字资产交易</h5>
+                    <p class="text-muted">支持 BTC、ETH、USDT 等多种主流数字货币交易，提供专业的交易体验</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="icon bg-success-gradient"><i class="fas fa-wallet"></i></div>
+                    <h5 class="fw-bold">资产管理</h5>
+                    <p class="text-muted">安全的数字资产管理服务，多重加密保障，冷热钱包分离存储</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="icon bg-warning-gradient"><i class="fas fa-chart-line"></i></div>
+                    <h5 class="fw-bold">行情分析</h5>
+                    <p class="text-muted">实时行情数据，专业的K线图表和分析工具，助您把握市场脉搏</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="icon bg-danger-gradient"><i class="fas fa-shield-alt"></i></div>
+                    <h5 class="fw-bold">安全保障</h5>
+                    <p class="text-muted">多重安全防护体系，SSL加密传输，2FA双重认证保障账户安全</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="icon bg-info-gradient"><i class="fas fa-mobile-alt"></i></div>
+                    <h5 class="fw-bold">移动交易</h5>
+                    <p class="text-muted">支持手机端交易，随时随地操作，不错过任何投资机会</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="icon bg-purple-gradient"><i class="fas fa-headset"></i></div>
+                    <h5 class="fw-bold">24/7 客服</h5>
+                    <p class="text-muted">专业客服团队，7x24小时在线服务，快速响应您的问题</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4"><h5><i class="fas fa-coins me-2"></i>CoinTrade</h5><p>专业的数字货币交易平台</p></div>
+                <div class="col-md-2"><h5>平台</h5><a href="/about">关于我们</a><br><a href="/terms">服务条款</a></div>
+                <div class="col-md-2"><h5>交易</h5><a href="/market">交易市场</a><br><a href="/deposit">充值</a></div>
+                <div class="col-md-4"><h5>联系我们</h5><p><i class="fas fa-envelope me-2"></i>support@cointrade.com</p><p><i class="fas fa-phone me-2"></i>+86 400-888-8888</p></div>
+            </div>
+            <div class="text-center mt-4 pt-3 border-top border-secondary"><p class="mb-0">© 2024 CoinTrade. All rights reserved.</p></div>
+        </div>
+    </footer>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邀请系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+        .admin-header { background: #1a1a2e; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-header a { color: #aaa; text-decoration: none; }
+        .admin-header a:hover { color: white; }
+        .sidebar { background: white; width: 200px; min-height: calc(100vh - 70px); padding: 20px 0; border-right: 1px solid #e8ecf1; position: fixed; left: 0; top: 70px; bottom: 0; overflow-y: auto; }
+        .sidebar a { display: block; padding: 10px 24px; color: #333; text-decoration: none; font-size: 13px; }
+        .sidebar a:hover { background: #f0f2f5; }
+        .sidebar a.active { background: #667eea; color: white; }
+        .sidebar .section-title { padding: 8px 24px; font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; }
+        .main { margin-left: 200px; padding: 24px; }
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e8ecf1; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .btn { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-badge.pending { background: #fef9e7; color: #7d6608; }
+        .status-badge.completed { background: #e8f8f0; color: #27ae60; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+        .stat-item { background: #f8f9fa; padding: 16px; border-radius: 12px; text-align: center; }
+        .stat-item .num { font-size: 24px; font-weight: 700; }
+        .stat-item .label { font-size: 13px; color: #888; }
+        .empty { text-align: center; color: #999; padding: 40px 0; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h2>🔐 管理后台</h2>
+        <div class="user-info">
+            <span>👋 <%= user.username %></span>
+            <a href="/admin/logout">退出</a>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <div class="section-title">📊 核心功能</div>
+        <a href="/admin/dashboard">📊 控制台</a>
+        <a href="/admin/users">👤 用户管理</a>
+        <a href="/admin/deposits">💰 充值管理</a>
+        <a href="/admin/withdrawals">🏦 取款管理</a>
+        <a href="/admin/trades">📈 交易管理</a>
+        <div class="section-title">📢 内容管理</div>
+        <a href="/admin/announcements">📢 公告管理</a>
+        <a href="/admin/notifications">📨 通知管理</a>
+        <div class="section-title">📊 数据统计</div>
+        <a href="/admin/finance">💰 财务统计</a>
+        <a href="/admin/invite" class="active">🎯 邀请系统</a>
+        <a href="/admin/export">📊 导出报表</a>
+        <div class="section-title">🛡️ 安全与风控</div>
+        <a href="/admin/risk-control">🛡️ 风控管理</a>
+        <a href="/admin/login-logs">📋 登录日志</a>
+        <a href="/admin/backup">💾 数据备份</a>
+        <div class="section-title">🎫 客服支持</div>
+        <a href="/admin/tickets">🎫 工单管理</a>
+        <div class="section-title">🔑 系统管理</div>
+        <a href="/admin/api">🔑 API管理</a>
+        <a href="/admin/settings">⚙️ 系统设置</a>
+        <a href="/admin/logs">📋 操作日志</a>
+    </nav>
+
+    <div class="main">
+        <h2 style="margin-bottom:16px;">🎯 邀请系统</h2>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="num"><%= stats.total || 0 %></div>
+                <div class="label">总邀请</div>
+            </div>
+            <div class="stat-item">
+                <div class="num" style="color:#27ae60;"><%= stats.completed || 0 %></div>
+                <div class="label">已完成</div>
+            </div>
+            <div class="stat-item">
+                <div class="num" style="color:#667eea;"><%= stats.total_reward || 0 %></div>
+                <div class="label">总奖励 (USDT)</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:16px;">📋 邀请记录</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>邀请人</th>
+                        <th>被邀请人</th>
+                        <th>邀请码</th>
+                        <th>奖励</th>
+                        <th>状态</th>
+                        <th>时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (invites && invites.length > 0) { %>
+                        <% invites.forEach(function(i) { %>
+                            <tr>
+                                <td><%= i.id %></td>
+                                <td><%= i.inviter || '--' %></td>
+                                <td><%= i.invited || '--' %></td>
+                                <td><%= i.invite_code %></td>
+                                <td><%= i.reward %></td>
+                                <td>
+                                    <span class="status-badge <%= i.status %>">
+                                        <%= i.status === 'pending' ? '⏳ 待完成' : '✅ 已完成' %>
+                                    </span>
+                                </td>
+                                <td style="font-size:12px;color:#888;"><%= new Date(i.created_at).toLocaleString() %></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="7" class="empty">暂无邀请记录</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

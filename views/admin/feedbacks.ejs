@@ -1,0 +1,36 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-comment me-2 text-primary"></i>用户反馈</h4>
+        <span class="badge bg-danger">3 条未读</span>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead><tr><th>ID</th><th>用户</th><th>内容</th><th>评分</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+                <tbody>
+                    <% feedbacks.forEach(f => { %>
+                    <tr>
+                        <td><%= f.id %></td>
+                        <td><strong><%= f.user %></strong></td>
+                        <td><%= f.content %></td>
+                        <td>
+                            <% for(let i=0; i<f.rating; i++) { %>⭐<% } %>
+                        </td>
+                        <td><span class="badge bg-<%= f.status === 'read' ? 'secondary' : 'danger' %>"><%= f.status %></span></td>
+                        <td><%= f.time %></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">回复</button>
+                            <button class="btn btn-sm btn-outline-success">已读</button>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

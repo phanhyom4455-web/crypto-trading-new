@@ -1,0 +1,208 @@
+<style>
+.history-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.history-section h6 {
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+.history-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.history-tabs button {
+    padding: 8px 20px;
+    border: 2px solid #e8ecf1;
+    background: #fff;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.history-tabs button.active {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.history-table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+}
+.history-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 14px;
+}
+.history-table tr:hover {
+    background: #f9fafb;
+}
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.status-success {
+    background: #d1fae5;
+    color: #059669;
+}
+.status-pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+.status-failed {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.type-badge {
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.type-deposit {
+    background: #dbeafe;
+    color: #2563eb;
+}
+.type-withdraw {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.type-exchange {
+    background: #d1fae5;
+    color: #059669;
+}
+.type-trade {
+    background: #fef3c7;
+    color: #d97706;
+}
+.empty-message {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+</style>
+
+<div class="history-section">
+    <h6><i class="fas fa-history text-primary me-2"></i>交易记录</h6>
+    
+    <!-- 筛选标签 -->
+    <div class="history-tabs">
+        <button class="active" onclick="filterHistory('all')">全部</button>
+        <button onclick="filterHistory('deposit')">充值</button>
+        <button onclick="filterHistory('withdraw')">提现</button>
+        <button onclick="filterHistory('exchange')">兑换</button>
+        <button onclick="filterHistory('trade')">交易</button>
+    </div>
+    
+    <!-- 交易记录表格 -->
+    <div class="table-responsive">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>时间</th>
+                    <th>类型</th>
+                    <th>金额</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody">
+                <!-- 交易记录将在这里显示 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// 模拟交易记录数据
+const mockHistory = [
+    { time: '2024-09-09 10:30', type: 'deposit', amount: '1,000 USDT', status: 'success' },
+    { time: '2024-09-09 09:15', type: 'exchange', amount: '500 USDT → 0.008 BTC', status: 'success' },
+    { time: '2024-09-08 22:45', type: 'trade', amount: '买入 0.5 BTC @ $62,450', status: 'success' },
+    { time: '2024-09-08 20:30', type: 'withdraw', amount: '200 USDT', status: 'pending' },
+    { time: '2024-09-08 18:00', type: 'deposit', amount: '2,000 USDT', status: 'success' },
+    { time: '2024-09-08 15:20', type: 'exchange', amount: '1 ETH → 2,450 USDT', status: 'success' },
+    { time: '2024-09-07 12:00', type: 'trade', amount: '卖出 2 ETH @ $2,450', status: 'success' },
+    { time: '2024-09-07 10:30', type: 'withdraw', amount: '0.5 BTC', status: 'failed' },
+    { time: '2024-09-06 20:00', type: 'deposit', amount: '500 USDT', status: 'success' },
+    { time: '2024-09-06 15:45', type: 'exchange', amount: '100 ADA → 45.2 USDT', status: 'success' }
+];
+
+// 渲染交易记录
+function renderHistory(data) {
+    const tbody = document.getElementById('historyBody');
+    
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-message">暂无交易记录</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    data.forEach(item => {
+        const typeMap = {
+            deposit: { label: '充值', class: 'type-deposit', icon: 'fas fa-arrow-down' },
+            withdraw: { label: '提现', class: 'type-withdraw', icon: 'fas fa-arrow-up' },
+            exchange: { label: '兑换', class: 'type-exchange', icon: 'fas fa-exchange-alt' },
+            trade: { label: '交易', class: 'type-trade', icon: 'fas fa-chart-line' }
+        };
+        
+        const statusMap = {
+            success: { label: '成功', class: 'status-success' },
+            pending: { label: '待处理', class: 'status-pending' },
+            failed: { label: '失败', class: 'status-failed' }
+        };
+        
+        const typeInfo = typeMap[item.type] || { label: item.type, class: '', icon: 'fas fa-circle' };
+        const statusInfo = statusMap[item.status] || { label: item.status, class: '' };
+        
+        html += `
+            <tr>
+                <td>${item.time}</td>
+                <td>
+                    <span class="type-badge ${typeInfo.class}">
+                        <i class="${typeInfo.icon} me-1"></i>${typeInfo.label}
+                    </span>
+                </td>
+                <td>${item.amount}</td>
+                <td>
+                    <span class="status-badge ${statusInfo.class}">${statusInfo.label}</span>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+}
+
+// 筛选交易记录
+function filterHistory(type) {
+    // 更新按钮状态
+    document.querySelectorAll('.history-tabs button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // 筛选数据
+    if (type === 'all') {
+        renderHistory(mockHistory);
+    } else {
+        const filtered = mockHistory.filter(item => item.type === type);
+        renderHistory(filtered);
+    }
+}
+
+// 初始化
+renderHistory(mockHistory);
+</script>

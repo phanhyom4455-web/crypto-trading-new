@@ -1,0 +1,29 @@
+<!-- 实名认证入口 -->
+<% if (user) { %>
+<style>
+.kyc-entry {
+    display: inline-block;
+    margin-left: 10px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+.kyc-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+    color: #fff;
+}
+.kyc-entry i {
+    margin-right: 5px;
+}
+</style>
+
+<a href="/kyc" class="kyc-entry">
+    <i class="fas fa-shield-alt"></i>实名认证
+</a>
+<% } %>

@@ -1,0 +1,130 @@
+<!-- ============================================ -->
+<!-- 手机端适配 -->
+<!-- ============================================ -->
+<style>
+/* ============================================ */
+/* 手机端适配 */
+/* ============================================ */
+@media (max-width: 768px) {
+    /* 导航栏 */
+    /* 手机上隐藏 App 下载二维码 */
+    .app-download {
+        display: none !important;
+    }
+
+    /* 手机上隐藏多语言切换 */
+    .lang-switcher {
+        display: none !important;
+    }
+    .navbar-collapse {
+        background: rgba(102,126,234,0.98);
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 10px;
+    }
+    .navbar-nav {
+        text-align: center;
+    }
+    .navbar-nav .nav-link {
+        padding: 10px !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .navbar-nav .nav-link:last-child {
+        border-bottom: none;
+    }
+    .d-flex.align-items-center.gap-2 {
+        flex-direction: column;
+        width: 100%;
+        margin-top: 10px;
+        gap: 8px !important;
+    }
+    .d-flex.align-items-center.gap-2 .btn {
+        width: 100%;
+    }
+
+    /* 欢迎横幅 */
+    .welcome-banner {
+        padding: 20px;
+        text-align: center;
+    }
+    .welcome-banner .col-lg-4 {
+        text-align: center !important;
+    }
+
+    /* 统计卡片：手机上 2 列 */
+    .stat-card {
+        padding: 15px;
+    }
+    .stat-card .number {
+        font-size: 20px;
+    }
+    .stat-card .icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    .stat-card .label {
+        font-size: 12px;
+    }
+
+    /* K线图 */
+    #klineChart {
+        height: 250px !important;
+    }
+
+    /* 热门交易对 */
+    .pair-item {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    .pair-item .price {
+        font-size: 13px;
+    }
+    .pair-item .change {
+        font-size: 12px;
+    }
+
+    /* 快速功能入口 */
+    .quick-card {
+        padding: 20px;
+    }
+    .quick-card i {
+        font-size: 24px;
+    }
+
+    /* 表格横向滚动 */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 底部间距（避免被客服按钮挡住） */
+    body {
+        padding-bottom: 150px;
+    }
+}
+
+/* 超小屏（小于 480px） */
+@media (max-width: 480px) {
+    .stat-card .number {
+        font-size: 18px;
+    }
+    .stat-card .icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    .welcome-banner h3 {
+        font-size: 18px;
+    }
+    .quick-card i {
+        font-size: 20px;
+    }
+    .quick-card h6 {
+        font-size: 14px;
+    }
+    .quick-card p {
+        font-size: 11px;
+    }
+}
+</style>

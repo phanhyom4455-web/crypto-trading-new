@@ -1,0 +1,223 @@
+<style>
+.exchange-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.exchange-section h6 {
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+.exchange-form {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.exchange-form .form-group {
+    flex: 1;
+    min-width: 200px;
+}
+.exchange-form label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #666;
+    display: block;
+    margin-bottom: 8px;
+}
+.exchange-form select,
+.exchange-form input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e8ecf1;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+.exchange-form select:focus,
+.exchange-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+.exchange-rate {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+}
+.exchange-rate .rate {
+    font-size: 20px;
+    font-weight: 800;
+    color: #667eea;
+}
+.exchange-rate .info {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+}
+.exchange-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+}
+.exchange-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+}
+.exchange-result {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #d1fae5;
+    color: #059669;
+    font-weight: 600;
+    text-align: center;
+}
+.exchange-result.error {
+    background: #fee2e2;
+    color: #dc2626;
+}
+</style>
+
+<div class="exchange-section">
+    <h6><i class="fas fa-exchange-alt text-primary me-2"></i>币币兑换</h6>
+    
+    <div class="exchange-form">
+        <!-- 卖出货币 -->
+        <div class="form-group">
+            <label>卖出</label>
+            <select id="sellCurrency" onchange="updateExchangeRate()">
+                <option value="USDT">USDT (泰达币)</option>
+                <option value="BTC">BTC (比特币)</option>
+                <option value="ETH">ETH (以太坊)</option>
+                <option value="ADA">ADA (艾达币)</option>
+            </select>
+        </div>
+        
+        <!-- 买入货币 -->
+        <div class="form-group">
+            <label>买入</label>
+            <select id="buyCurrency" onchange="updateExchangeRate()">
+                <option value="BTC">BTC (比特币)</option>
+                <option value="USDT">USDT (泰达币)</option>
+                <option value="ETH">ETH (以太坊)</option>
+                <option value="ADA">ADA (艾达币)</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- 实时汇率 -->
+    <div class="exchange-rate">
+        <div class="rate" id="exchangeRate">1 USDT = 0.000016 BTC</div>
+        <div class="info">实时汇率 · 手续费 0.1%</div>
+    </div>
+    
+    <!-- 兑换金额 -->
+    <div class="exchange-form">
+        <div class="form-group">
+            <label>兑换数量</label>
+            <input type="number" id="exchangeAmount" placeholder="请输入数量" min="0" oninput="calculateExchange()">
+        </div>
+    </div>
+    
+    <!-- 兑换结果 -->
+    <div class="exchange-result" id="exchangeResult"></div>
+    
+    <button class="exchange-btn" onclick="confirmExchange()">
+        <i class="fas fa-exchange-alt me-2"></i>确认兑换
+    </button>
+</div>
+
+<script>
+// 实时汇率数据（模拟）
+const exchangeRates = {
+    'USDT_BTC': 0.000016,
+    'USDT_ETH': 0.000408,
+    'USDT_ADA': 2.21,
+    'BTC_USDT': 62450,
+    'BTC_ETH': 25.5,
+    'BTC_ADA': 138000,
+    'ETH_USDT': 2450,
+    'ETH_BTC': 0.0392,
+    'ETH_ADA': 5400,
+    'ADA_USDT': 0.452,
+    'ADA_BTC': 0.00000724,
+    'ADA_ETH': 0.000185
+};
+
+// 更新汇率
+function updateExchangeRate() {
+    const sell = document.getElementById('sellCurrency').value;
+    const buy = document.getElementById('buyCurrency').value;
+    const key = sell + '_' + buy;
+    const rate = exchangeRates[key] || 0;
+    
+    const rateEl = document.getElementById('exchangeRate');
+    rateEl.textContent = `1 ${sell} = ${rate} ${buy}`;
+    
+    // 重新计算
+    calculateExchange();
+}
+
+// 计算兑换结果
+function calculateExchange() {
+    const sell = document.getElementById('sellCurrency').value;
+    const buy = document.getElementById('buyCurrency').value;
+    const amount = parseFloat(document.getElementById('exchangeAmount').value) || 0;
+    const key = sell + '_' + buy;
+    const rate = exchangeRates[key] || 0;
+    
+    const resultEl = document.getElementById('exchangeResult');
+    const result = amount * rate;
+    
+    if (amount > 0) {
+        resultEl.style.display = 'block';
+        resultEl.classList.remove('error');
+        resultEl.innerHTML = `✅ 可以兑换：<strong>${result.toFixed(8)} ${buy}</strong>`;
+    } else {
+        resultEl.style.display = 'none';
+    }
+}
+
+// 确认兑换
+function confirmExchange() {
+    const sell = document.getElementById('sellCurrency').value;
+    const buy = document.getElementById('buyCurrency').value;
+    const amount = parseFloat(document.getElementById('exchangeAmount').value) || 0;
+    
+    if (amount <= 0) {
+        alert('请输入有效的兑换数量');
+        return;
+    }
+    
+    if (sell === buy) {
+        alert('卖出和买入的货币不能相同');
+        return;
+    }
+    
+    const resultEl = document.getElementById('exchangeResult');
+    resultEl.style.display = 'block';
+    resultEl.classList.remove('error');
+    resultEl.innerHTML = '✅ 兑换成功！请查看您的资产';
+    
+    // 清空输入
+    document.getElementById('exchangeAmount').value = '';
+    
+    setTimeout(() => {
+        resultEl.style.display = 'none';
+    }, 3000);
+}
+
+// 初始化
+updateExchangeRate();
+</script>

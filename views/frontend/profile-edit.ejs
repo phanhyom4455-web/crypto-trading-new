@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑资料 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f0f2f5; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .navbar-brand { color: #fff !important; font-weight: 800; font-size: 24px; }
+        .navbar-brand i { margin-right: 10px; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; padding: 8px 18px !important; border-radius: 8px; }
+        .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.15); }
+        .nav-link i { margin-right: 6px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: none; padding: 8px; }
+        .dropdown-item { border-radius: 8px; padding: 10px 20px; }
+        .dropdown-item:hover { background: #f3f4f6; }
+        .dropdown-item i { width: 20px; margin-right: 10px; color: #667eea; }
+        .footer { background: #1a202c; color: rgba(255,255,255,0.7); padding: 40px 0; margin-top: 50px; }
+        .footer a { color: rgba(255,255,255,0.6); text-decoration: none; display: block; padding: 4px 0; }
+        .footer a:hover { color: #fff; }
+        .footer h5 { color: #fff; font-weight: 700; }
+        .profile-card { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #fff; font-size: 32px; }
+        .sidebar-menu { list-style: none; padding: 0; }
+        .sidebar-menu li a { display: block; padding: 10px 16px; border-radius: 8px; color: #495057; text-decoration: none; transition: 0.3s; }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active { background: #f3f4f6; color: #667eea; }
+        .sidebar-menu li a i { width: 20px; margin-right: 8px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 8px; padding: 8px 20px; font-weight: 600; color: #fff; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .alert-info { background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; padding: 12px 16px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins"></i>CoinTrade</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market">行情</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/trade">交易</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit">充值</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/withdraw">提现</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/help">帮助</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <% if (user) { %>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle d-flex align-items-center gap-2" style="color: #fff; border: none; padding: 4px 12px;" data-bs-toggle="dropdown">
+                                <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                                <span><%= user.username %></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                                <li><a class="dropdown-item" href="/profile-edit"><i class="fas fa-edit"></i>编辑资料</a></li>
+                                <li><a class="dropdown-item" href="/assets"><i class="fas fa-wallet"></i>资产明细</a></li>
+                                <li><a class="dropdown-item" href="/trade-history"><i class="fas fa-history"></i>交易记录</a></li>
+                                <li><a class="dropdown-item" href="/security"><i class="fas fa-shield-alt"></i>安全设置</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/api/logout"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-login" style="color:#fff;border:2px solid rgba(255,255,255,0.4);border-radius:50px;padding:8px 24px;background:transparent;">登录</a>
+                        <a href="/register" class="btn btn-register" style="background:#fff;color:#667eea;border:none;border-radius:50px;padding:8px 24px;font-weight:600;">注册</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row g-4">
+            <div class="col-lg-3">
+                <div class="profile-card">
+                    <div class="text-center">
+                        <div class="profile-avatar"><%= user ? user.username.charAt(0).toUpperCase() : 'U' %></div>
+                        <h5 class="fw-bold"><%= user ? user.username : '用户' %></h5>
+                        <p class="text-muted small"><%= user ? user.email : '' %></p>
+                        <span class="badge bg-success">VIP</span>
+                    </div>
+                    <hr>
+                    <ul class="sidebar-menu">
+                        <li><a href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                        <li><a href="/profile-edit" class="active"><i class="fas fa-edit"></i>编辑资料</a></li>
+                        <li><a href="/assets"><i class="fas fa-wallet"></i>资产明细</a></li>
+                        <li><a href="/trade-history"><i class="fas fa-history"></i>交易记录</a></li>
+                        <li><a href="/security"><i class="fas fa-shield-alt"></i>安全设置</a></li>
+                        <li><hr></li>
+                        <li><a href="/deposit"><i class="fas fa-arrow-down text-success"></i>充值</a></li>
+                        <li><a href="/withdraw"><i class="fas fa-arrow-up text-danger"></i>提现</a></li>
+                        <li><a href="/api/logout" class="text-danger"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="profile-card">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-edit text-primary me-2"></i>编辑资料</h5>
+                    <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>编辑功能开发中，敬请期待</div>
+                    <div class="mb-3"><label class="fw-bold">用户名</label><input type="text" class="form-control" value="<%= user ? user.username : '' %>" readonly></div>
+                    <div class="mb-3"><label class="fw-bold">邮箱</label><input type="email" class="form-control" value="<%= user ? user.email : '' %>"></div>
+                    <button class="btn btn-primary" onclick="alert('保存功能开发中，敬请期待')">保存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4"><h5><i class="fas fa-coins me-2"></i>CoinTrade</h5><p>专业的数字货币交易平台</p></div>
+                <div class="col-md-2"><h5>平台</h5><a href="/about">关于我们</a><a href="/terms">服务条款</a></div>
+                <div class="col-md-2"><h5>交易</h5><a href="/market">交易市场</a><a href="/deposit">充值</a></div>
+                <div class="col-md-4"><h5>联系我们</h5><p><i class="fas fa-envelope me-2"></i>support@cointrade.com</p><p><i class="fas fa-phone me-2"></i>+86 400-888-8888</p></div>
+            </div>
+            <div class="text-center mt-4 pt-3 border-top border-secondary"><p class="mb-0">© 2024 CoinTrade. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

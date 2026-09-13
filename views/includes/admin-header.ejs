@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || '管理后台' %></title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        .main-content{margin-left:250px;padding:20px;min-height:100vh;background:#f8f9fa}
+        .top-bar{background:#fff;padding:15px 25px;border-radius:12px;box-shadow:0 2px 4px rgba(0,0,0,0.05);margin-bottom:20px}
+        .card{border:none;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);transition:transform .2s}
+        .card:hover{transform:translateY(-2px)}
+        .badge{padding:6px 12px;border-radius:6px}
+        .btn{border-radius:8px;padding:8px 16px}
+        .modal-content{border-radius:16px}
+    </style>
+</head>
+<body> <!-- ============================================ -->
+<!-- 全局声音通知系统（所有后台页面共用） -->
+<!-- ============================================ -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function() {
+    // ============================================
+    // 声音系统（全局，所有后台页面共用）
+    // ============================================
+    let soundEnabled = localStorage.getItem('soundEnabled') === 'true';
+    let audioCtx = null;
+    let audioUnlocked = false;
+
+    // 初始化音频
+    function initAudio() {
+        if (!audioCtx) {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.error('无法创建音频上下文', e);
+            }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    // 播放一个音
+    function playBeep(frequency, duration, type) {
+        if (!soundEnabled) return;
+        if (!audioCtx) initAudio();
+        if (!audioCtx) return;
+        try {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = frequency;
+            oscillator.type = type || 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        } catch (e) {
+            console.error('播放声音失败', e);
+        }
+    }
+
+    // 新订单提示音（3声）
+    function playNewOrderSound() {
+        if (!soundEnabled) return;
+        playBeep(660, 0.08);
+        setTimeout(() => playBeep(880, 0.08), 110);
+        setTimeout(() => playBeep(1100, 0.12), 220);
+    }
+
+    // 暴露给全局，页面上的按钮可以调用
+    window.__soundSystem = {
+        enable: function() {
+            initAudio();
+            soundEnabled = true;
+            localStorage.setItem('soundEnabled', 'true');
+            audioUnlocked = true;
+            const btn = document.getElementById('soundBtn');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-volume-up"></i> 声音已启用 ✅';
+                btn.className = 'btn btn-sm btn-success me-2';
+            }
+            playNewOrderSound();
+            alert('🔊 声音已启用！切换页面后依然有效。');
+        },
+        restore: function() {
+            const btn = document.getElementById('soundBtn');
+            if (soundEnabled) {
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-volume-up"></i> 声音已启用 ✅';
+                    btn.className = 'btn btn-sm btn-success me-2';
+                }
+                initAudio();
+            } else {
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-volume-up"></i> 启用声音';
+                    btn.className = 'btn btn-sm btn-outline-primary me-2';
+                }
+            }
+        },
+        isEnabled: function() { return soundEnabled; },
+        play: playNewOrderSound
+    };
+
+    // 页面任意点击自动解锁音频
+    document.addEventListener('click', function autoUnlock() {
+        if (soundEnabled && !audioUnlocked) {
+            initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            audioUnlocked = true;
+            console.log('🔊 音频已自动解锁');
+        }
+    }, { once: false });
+
+    // ============================================
+    // Socket.IO 监听（全局，所有页面都收到）
+    // ============================================
+    function connectSocket() {
+        if (typeof io === 'undefined') {
+            console.warn('Socket.IO 还没加载，1秒后重试...');
+            setTimeout(connectSocket, 1000);
+            return;
+        }
+
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('✅ Socket.IO 已连接');
+        });
+
+        // 收到新通知 → 播放声音
+        socket.on('new-notification', (data) => {
+            console.log('🔔 收到通知:', data);
+            playNewOrderSound();
+
+            // 可选：在页面右上角弹一个小提示
+            showToast(data);
+        });
+    }
+
+    function showToast(data) {
+        try {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#667eea;color:#fff;padding:15px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);z-index:99999;font-size:14px;';
+            toast.innerHTML = '🔔 ' + (data.title || '新通知') + '<br><small>' + (data.message || '') + '</small>';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        } catch (e) {}
+    }
+
+    // 页面加载完成后连接
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', connectSocket);
+    } else {
+        connectSocket();
+    }
+})();
+</script>

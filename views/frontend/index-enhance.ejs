@@ -1,0 +1,398 @@
+<!-- ============================================ -->
+<!-- 首页增强功能 - 所有新功能都放在这里 -->
+<!-- ============================================ -->
+
+<!-- ============================================ -->
+<!-- 1. 公告栏 -->
+<!-- ============================================ -->
+
+<!-- ============================================ -->
+<!-- 2. 实时价格跳动 -->
+<!-- ============================================ -->
+<script>
+// 模拟实时价格数据
+const realtimePrices = [
+    { id: 'btc', pair: 'BTC/USDT', price: 62450, change: 2.35, volume: '12.5K BTC' },
+    { id: 'eth', pair: 'ETH/USDT', price: 2450, change: -1.20, volume: '45.2K ETH' },
+    { id: 'ada', pair: 'ADA/USDT', price: 0.452, change: 5.60, volume: '1.2M ADA' },
+    { id: 'dot', pair: 'DOT/USDT', price: 6.25, change: 3.80, volume: '85K DOT' },
+    { id: 'sol', pair: 'SOL/USDT', price: 25.80, change: 4.20, volume: '120K SOL' },
+    { id: 'avax', pair: 'AVAX/USDT', price: 14.20, change: 6.80, volume: '65K AVAX' }
+];
+
+function updateRealtimePrices() {
+    realtimePrices.forEach(p => {
+        // 随机波动
+        p.price += (Math.random() - 0.5) * p.price * 0.003;
+        p.change += (Math.random() - 0.5) * 0.08;
+        p.volume = (parseFloat(p.volume) * (1 + Math.random() * 0.01)).toFixed(2) + ' ' + p.volume.split(' ')[1];
+        
+        // 更新价格
+        const priceEl = document.getElementById('price-' + p.id);
+        if (priceEl) {
+            priceEl.textContent = '$' + p.price.toFixed(p.price < 1 ? 4 : 2);
+        }
+        
+        // 更新涨跌幅
+        const changeEl = document.getElementById('change-' + p.id);
+        if (changeEl) {
+            changeEl.textContent = (p.change >= 0 ? '▲+' : '▼') + Math.abs(p.change).toFixed(2) + '%';
+            changeEl.className = 'change ' + (p.change >= 0 ? 'up' : 'down');
+        }
+        
+        // 更新成交量
+        const volumeEl = document.getElementById('volume-' + p.id);
+        if (volumeEl) {
+            volumeEl.textContent = '24h: ' + p.volume;
+        }
+    });
+}
+
+// 每3秒更新
+setInterval(updateRealtimePrices, 3000);
+
+// 初始化
+updateRealtimePrices();
+</script>
+
+<!-- ============================================ -->
+<!-- 3. 交易对切换 - K线图 -->
+<!-- ============================================ -->
+<script>
+// 交易对切换
+function switchPair(pair) {
+    const pairData = {
+        'BTC/USDT': [62000, 62500, 61800, 62450, 62450, 62800, 62200, 62600, 62600, 63200, 62500, 63000, 63000, 63500, 62800, 63300, 63300, 63800, 63100, 63500],
+        'ETH/USDT': [2400, 2450, 2380, 2430, 2430, 2480, 2410, 2450, 2450, 2500, 2420, 2470, 2470, 2520, 2440, 2480, 2480, 2530, 2450, 2490],
+        'ADA/USDT': [0.44, 0.45, 0.43, 0.452, 0.452, 0.46, 0.44, 0.455, 0.455, 0.47, 0.45, 0.465, 0.465, 0.48, 0.46, 0.475, 0.475, 0.49, 0.47, 0.485],
+        'DOT/USDT': [6.0, 6.1, 5.95, 6.05, 6.05, 6.15, 6.0, 6.1, 6.1, 6.2, 6.05, 6.15, 6.15, 6.3, 6.1, 6.2, 6.2, 6.35, 6.15, 6.25]
+    };
+    
+    const data = pairData[pair] || pairData['BTC/USDT'];
+    
+    // 更新K线图
+    if (typeof myChart !== 'undefined') {
+        myChart.setOption({
+            series: [{
+                data: data.map((price, i) => [
+                    price - 100, price + 50, price - 150, price
+                ])
+            }]
+        });
+    }
+    
+    // 更新当前交易对标题
+    const titleEl = document.getElementById('currentPair');
+    if (titleEl) {
+        titleEl.textContent = pair + ' 走势图';
+    }
+    
+    // 更新按钮状态
+    document.querySelectorAll('.pair-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-' + pair.replace('/', '-')).classList.add('active');
+}
+</script>
+
+<!-- ============================================ -->
+<!-- 4. 买卖盘口（深度图） -->
+<!-- ============================================ -->
+<style>
+.order-book {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.order-book h6 {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.order-book .buy-row, .order-book .sell-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 13px;
+}
+.order-book .buy-row .price {
+    color: #10b981;
+    font-weight: 600;
+}
+.order-book .sell-row .price {
+    color: #ef4444;
+    font-weight: 600;
+}
+.order-book .amount {
+    color: #666;
+}
+</style>
+
+<div class="order-book">
+    <h6><i class="fas fa-book-open text-primary me-2"></i>实时盘口</h6>
+    <div class="sell-orders">
+        <div class="sell-row"><span class="price">$62,500</span><span class="amount">0.25 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,480</span><span class="amount">0.12 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,460</span><span class="amount">0.35 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,440</span><span class="amount">0.18 BTC</span></div>
+        <div class="sell-row"><span class="price">$62,420</span><span class="amount">0.22 BTC</span></div>
+    </div>
+    <div style="text-align: center; padding: 10px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;">
+        <span style="font-size: 20px; font-weight: 700; color: #10b981;">$62,450</span>
+        <span style="display: block; font-size: 12px; color: #999;">当前价格</span>
+    </div>
+    <div class="buy-orders">
+        <div class="buy-row"><span class="price">$62,430</span><span class="amount">0.15 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,410</span><span class="amount">0.28 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,390</span><span class="amount">0.45 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,370</span><span class="amount">0.12 BTC</span></div>
+        <div class="buy-row"><span class="price">$62,350</span><span class="amount">0.32 BTC</span></div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 5. 24小时成交量 -->
+<!-- ============================================ -->
+<style>
+.volume-stats {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.volume-stats h6 {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.volume-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+.volume-row:last-child {
+    border-bottom: none;
+}
+.volume-row .pair {
+    font-weight: 600;
+}
+.volume-row .vol {
+    color: #666;
+}
+.volume-row .change.up {
+    color: #10b981;
+    font-weight: 600;
+}
+.volume-row .change.down {
+    color: #ef4444;
+    font-weight: 600;
+}
+</style>
+
+<div class="volume-stats">
+    <h6><i class="fas fa-chart-bar text-primary me-2"></i>24小时成交量</h6>
+    <div class="volume-row">
+        <span class="pair">BTC/USDT</span>
+        <span class="vol" id="volume-btc">12.5K BTC</span>
+        <span class="change up" id="change-btc">▲+2.35%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">ETH/USDT</span>
+        <span class="vol" id="volume-eth">45.2K ETH</span>
+        <span class="change down" id="change-eth">▼-1.20%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">ADA/USDT</span>
+        <span class="vol" id="volume-ada">1.2M ADA</span>
+        <span class="change up" id="change-ada">▲+5.60%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">DOT/USDT</span>
+        <span class="vol" id="volume-dot">85K DOT</span>
+        <span class="change up" id="change-dot">▲+3.80%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">SOL/USDT</span>
+        <span class="vol" id="volume-sol">120K SOL</span>
+        <span class="change up" id="change-sol">▲+4.20%</span>
+    </div>
+    <div class="volume-row">
+        <span class="pair">AVAX/USDT</span>
+        <span class="vol" id="volume-avax">65K AVAX</span>
+        <span class="change up" id="change-avax">▲+6.80%</span>
+    </div>
+</div>
+
+
+
+<!-- ============================================ -->
+<!-- 7. 快捷交易入口 -->
+<!-- ============================================ -->
+<style>
+.quick-trade {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.quick-trade .trade-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.quick-trade .btn-buy {
+    background: #10b981;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.quick-trade .btn-sell {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+</style>
+
+<div class="quick-trade">
+    <h6><i class="fas fa-bolt text-warning me-2"></i>快捷交易</h6>
+    <div class="trade-buttons">
+        <button class="btn-buy" onclick="location.href='/trade?type=buy'">
+            <i class="fas fa-arrow-down me-1"></i>买入
+        </button>
+        <button class="btn-sell" onclick="location.href='/trade?type=sell'">
+            <i class="fas fa-arrow-up me-1"></i>卖出
+        </button>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 8. 多语言切换 -->
+<!-- ============================================ -->
+<style>
+.lang-switcher {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    gap: 5px;
+}
+.lang-switcher button {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.lang-switcher button.active {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+</style>
+
+<div class="lang-switcher">
+    <button onclick="setLang('zh')" class="active">中文</button>
+    <button onclick="setLang('en')">EN</button>
+    <button onclick="setLang('lo')">ລາວ</button>
+</div>
+
+<script>
+function setLang(lang) {
+    // 更新按钮状态
+    document.querySelectorAll('.lang-switcher button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // 简单翻译
+    const translations = {
+        zh: { home: '首页', market: '行情', trade: '交易', deposit: '充值', withdraw: '提现' },
+        en: { home: 'Home', market: 'Market', trade: 'Trade', deposit: 'Deposit', withdraw: 'Withdraw' },
+        lo: { home: 'ໜ້າຫຼັກ', market: 'ຕະຫຼາດ', trade: 'ຊື້ຂາຍ', deposit: 'ຝາກເງິນ', withdraw: 'ຖອນເງິນ' }
+    };
+    
+    const t = translations[lang];
+    if (t) {
+        const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+        if (navLinks.length >= 5) {
+            navLinks[0].textContent = t.home;
+            navLinks[1].textContent = t.market;
+            navLinks[2].textContent = t.trade;
+            navLinks[3].textContent = t.deposit;
+            navLinks[4].textContent = t.withdraw;
+        }
+    }
+}
+</script>
+
+<!-- ============================================ -->
+<!-- 9. App下载二维码 -->
+<!-- ============================================ -->
+<style>
+.app-download {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    z-index: 999;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    text-align: center;
+}
+.app-download img {
+    width: 100px;
+    height: 100px;
+}
+.app-download p {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0 0;
+}
+</style>
+
+<div class="app-download">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://example.com/app" alt="App下载">
+    <p>扫码下载App</p>
+</div>
+
+<!-- ============================================ -->
+
+
+<!-- ============================================ -->
+<!-- 11. 客服悬浮窗 -->
+<!-- ============================================ -->
+<style>
+.support-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.support-float:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+    color: #fff;
+}
+</style>
+
+<a href="/support" target="_blank" class="support-float">
+    <i class="fas fa-headset me-2"></i>客服
+</a>

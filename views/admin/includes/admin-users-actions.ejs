@@ -1,0 +1,103 @@
+<script>
+    // ============================================
+    // 重置密码
+    // ============================================
+    async function resetPassword(userId, username) {
+        const newPassword = prompt('请输入用户 "' + username + '" 的新密码（至少6位）：');
+        if (!newPassword) return;
+        if (newPassword.length < 6) {
+            alert('密码至少6位');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId, newPassword: newPassword })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('✅ 密码重置成功！');
+            } else {
+                alert('❌ 重置失败：' + result.message);
+            }
+        } catch (error) {
+            alert('❌ 请求失败，请检查网络');
+        }
+    }
+
+    // ============================================
+    // 用户安全设置
+    // ============================================
+    function viewSecurity(userId, username) {
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:30px;width:400px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+            '<h3 style="margin:0 0 10px;font-size:18px;">🔐 用户安全设置</h3>' +
+            '<p style="color:#666;margin-bottom:20px;font-size:14px;">用户：<strong>' + username + '</strong>（ID: ' + userId + '）</p>' +
+            '<button onclick="doResetFundPassword(' + userId + ', \'' + username + '\')" style="width:100%;padding:12px;margin-bottom:10px;border:2px solid #f59e0b;background:#fff;color:#f59e0b;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">💰 重置资金密码</button>' +
+            '<button onclick="doDisable2FA(' + userId + ', \'' + username + '\')" style="width:100%;padding:12px;margin-bottom:10px;border:2px solid #ef4444;background:#fff;color:#ef4444;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">🚫 关闭 2FA</button>' +
+            '<button onclick="window.open(\'/admin/login-logs?userId=' + userId + '\', \'_blank\')" style="width:100%;padding:12px;margin-bottom:20px;border:2px solid #3b82f6;background:#fff;color:#3b82f6;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">📋 查看登录日志</button>' +
+            '<button onclick="this.closest(\'div\').parentElement.remove()" style="width:100%;padding:12px;border:none;background:#e5e7eb;color:#333;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">取消</button>' +
+            '</div>';
+        document.body.appendChild(modal);
+    }
+
+    // ============================================
+    // 重置资金密码
+    // ============================================
+    function doResetFundPassword(userId, username) {
+        document.querySelectorAll('div[style*="z-index:9999"]').forEach(el => el.remove());
+
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:30px;width:400px;max-width:90%;">' +
+            '<h3 style="margin:0 0 10px;font-size:18px;">💰 重置资金密码</h3>' +
+            '<p style="color:#666;margin-bottom:20px;font-size:14px;">用户：<strong>' + username + '</strong></p>' +
+            '<input type="text" id="fundPwdInput" maxlength="6" placeholder="请输入6位数字资金密码" style="width:100%;padding:12px;border:2px solid #e8ecf1;border-radius:8px;font-size:16px;margin-bottom:20px;box-sizing:border-box;">' +
+            '<div style="display:flex;gap:10px;">' +
+            '<button onclick="submitFundPassword(' + userId + ')" style="flex:1;padding:12px;border:none;background:#10b981;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;">确定</button>' +
+            '<button onclick="this.closest(\'div\').parentElement.parentElement.remove()" style="flex:1;padding:12px;border:none;background:#e5e7eb;color:#333;border-radius:8px;font-weight:600;cursor:pointer;">取消</button>' +
+            '</div></div>';
+        document.body.appendChild(modal);
+    }
+
+    function submitFundPassword(userId) {
+        var pwd = document.getElementById('fundPwdInput').value;
+        if (!pwd || pwd.length !== 6 || !/^\d+$/.test(pwd)) {
+            alert('请输入6位数字');
+            return;
+        }
+
+        fetch('/api/admin/reset-fund-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, fundPassword: pwd })
+        }).then(r => r.json()).then(result => {
+            document.querySelectorAll('div[style*="z-index:9999"]').forEach(el => el.remove());
+            alert(result.success ? '✅ 资金密码已重置' : '❌ 失败：' + result.message);
+        }).catch(() => {
+            alert('❌ 请求失败，请检查后端接口');
+        });
+    }
+
+    // ============================================
+    // 关闭 2FA
+    // ============================================
+    function doDisable2FA(userId, username) {
+        document.querySelectorAll('div[style*="z-index:9999"]').forEach(el => el.remove());
+
+        if (!confirm('确定关闭用户 "' + username + '" 的 2FA 吗？')) return;
+
+        fetch('/api/admin/disable-2fa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId })
+        }).then(r => r.json()).then(result => {
+            alert(result.success ? '✅ 2FA 已关闭' : '❌ 失败：' + result.message);
+        }).catch(() => {
+            alert('❌ 请求失败，请检查后端接口');
+        });
+    }
+</script>

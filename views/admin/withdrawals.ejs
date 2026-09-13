@@ -1,0 +1,281 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid">
+    <div class="row">
+        <%- include('../includes/admin-sidebar') %>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-arrow-up me-2 text-danger"></i>取款管理</h1>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="enableSound()" id="soundBtn">
+                        <i class="fas fa-volume-up"></i> 启用声音
+                    </button>
+                    <span class="badge bg-warning">待处理: <span id="pendingCount">0</span></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户</th>
+                                    <th>金额</th>
+                                    <th>方式</th>
+                                    <th>地址</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawList">
+                                <tr><td colspan="8" class="text-center text-muted py-4">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ============================================
+    // 声音系统
+    // ============================================
+   // ============================================
+// 声音系统（持久化 + 自动解锁）
+// ============================================
+let soundEnabled = localStorage.getItem('soundEnabled') === 'true';
+let audioCtx = null;
+let audioUnlocked = false;
+
+// 初始化音频上下文（不播放，只创建）
+function initAudio() {
+    if (!audioCtx) {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.error('无法创建音频上下文', e);
+        }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+// 用户点击启用声音
+function enableSound() {
+    initAudio();
+    soundEnabled = true;
+    localStorage.setItem('soundEnabled', 'true');
+    audioUnlocked = true;
+
+    const btn = document.getElementById('soundBtn');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-volume-up"></i> 声音已启用 ✅';
+        btn.className = 'btn btn-sm btn-success me-2';
+    }
+    playTestSound();
+    alert('🔊 声音已启用！切换页面后依然有效。');
+}
+
+// 页面加载时恢复状态
+function restoreSoundState() {
+    const btn = document.getElementById('soundBtn');
+    if (soundEnabled) {
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-volume-up"></i> 声音已启用 ✅';
+            btn.className = 'btn btn-sm btn-success me-2';
+        }
+        initAudio();
+    } else {
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-volume-up"></i> 启用声音';
+            btn.className = 'btn btn-sm btn-outline-primary me-2';
+        }
+    }
+}
+
+// 用户在本页任意一次点击，自动解锁音频
+document.addEventListener('click', function autoUnlock() {
+    if (soundEnabled && !audioUnlocked) {
+        initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        audioUnlocked = true;
+        console.log('🔊 音频已自动解锁');
+    }
+}, { once: false });
+
+function playTestSound() {
+    playBeep(880, 0.1);
+    setTimeout(() => playBeep(1100, 0.1), 120);
+    setTimeout(() => playBeep(1320, 0.15), 240);
+}
+
+function playBeep(frequency, duration, type) {
+    if (!soundEnabled) return;
+    if (!audioCtx) initAudio();
+    if (!audioCtx) return;
+    try {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = frequency;
+        oscillator.type = type || 'sine';
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + duration);
+    } catch (e) {
+        console.error('播放声音失败', e);
+    }
+}
+
+function playSuccessSound() {
+    if (!soundEnabled) return;
+    playBeep(880, 0.12);
+    setTimeout(() => playBeep(1100, 0.12), 130);
+    setTimeout(() => playBeep(1320, 0.18), 260);
+}
+
+function playFailSound() {
+    if (!soundEnabled) return;
+    playBeep(440, 0.25);
+    setTimeout(() => playBeep(330, 0.35), 280);
+}
+
+function playNewOrderSound() {
+    if (!soundEnabled) return;
+    playBeep(660, 0.08);
+    setTimeout(() => playBeep(880, 0.08), 110);
+    setTimeout(() => playBeep(1100, 0.12), 220);
+}
+    // ============================================
+    // 加载提现列表
+    // ============================================
+    let previousPendingCount = 0;
+
+    async function loadWithdrawals() {
+        try {
+            const response = await fetch('/api/admin/withdrawals');
+            const data = await response.json();
+            const tbody = document.getElementById('withdrawList');
+            let pendingCount = 0;
+            
+            if (data.success && data.withdrawals && data.withdrawals.length > 0) {
+                let html = '';
+                data.withdrawals.forEach(w => {
+                    if (w.status === 'pending') pendingCount++;
+                    const statusMap = {
+                        'pending': '<span class="badge bg-warning">待处理</span>',
+                        'completed': '<span class="badge bg-success">已完成</span>',
+                        'failed': '<span class="badge bg-danger">已拒绝</span>'
+                    };
+                    html += `
+                        <tr>
+                            <td>${w.id}</td>
+                            <td><strong>${w.username || '用户'}</strong></td>
+                            <td>¥${parseFloat(w.amount).toFixed(2)}</td>
+                            <td>${w.method || 'USDT'}</td>
+                            <td><code>${w.address || '-'}</code></td>
+                            <td>${statusMap[w.status] || statusMap.pending}</td>
+                            <td>${new Date(w.created_at).toLocaleString()}</td>
+                            <td>
+                                ${w.status === 'pending' ? `
+                                    <button class="btn btn-sm btn-success" onclick="approveWithdraw(${w.id})">
+                                        <i class="fas fa-check"></i> 通过
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="rejectWithdraw(${w.id})">
+                                        <i class="fas fa-times"></i> 拒绝
+                                    </button>
+                                ` : '<span class="text-muted">已处理</span>'}
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+                document.getElementById('pendingCount').textContent = pendingCount;
+
+                if (pendingCount > previousPendingCount) {
+                    playNewOrderSound();
+                }
+                previousPendingCount = pendingCount;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">暂无取款记录</td></tr>`;
+                document.getElementById('pendingCount').textContent = 0;
+            }
+        } catch (error) {
+            console.error('加载提现记录失败:', error);
+            document.getElementById('withdrawList').innerHTML = `
+                <tr><td colspan="8" class="text-center text-danger py-4">加载失败，请刷新重试</td></tr>
+            `;
+        }
+    }
+
+    // ============================================
+    // 通过提现
+    // ============================================
+    async function approveWithdraw(id) {
+        if (!confirm('确定要通过这笔提现吗？')) return;
+        try {
+            const response = await fetch('/api/admin/withdraw/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            const data = await response.json();
+            if (data.success) {
+                playSuccessSound();
+                alert('✅ ' + data.message);
+                loadWithdrawals();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        } catch (error) {
+            alert('❌ 操作失败，请重试');
+            console.error(error);
+        }
+    }
+
+    // ============================================
+    // 拒绝提现
+    // ============================================
+    async function rejectWithdraw(id) {
+        if (!confirm('确定要拒绝这笔提现吗？')) return;
+        try {
+            const response = await fetch('/api/admin/withdraw/reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            const data = await response.json();
+            if (data.success) {
+                playFailSound();
+                alert('✅ ' + data.message);
+                loadWithdrawals();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        } catch (error) {
+            alert('❌ 操作失败，请重试');
+            console.error(error);
+        }
+    }
+
+   document.addEventListener('DOMContentLoaded', () => {
+    restoreSoundState();
+    loadWithdrawals();
+    setInterval(loadWithdrawals, 5000);
+});
+</script>
+</body>
+</html>

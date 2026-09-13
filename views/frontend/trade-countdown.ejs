@@ -1,0 +1,161 @@
+<!-- ============================================ -->
+<!-- 倒计时 + 输赢提示 -->
+<!-- ============================================ -->
+<style>
+.countdown-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+.countdown-modal.show {
+    display: flex;
+}
+.countdown-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+.countdown-box .timer {
+    font-size: 72px;
+    font-weight: 800;
+    color: #667eea;
+    margin: 20px 0;
+}
+.countdown-box .label {
+    font-size: 16px;
+    color: #666;
+}
+.countdown-box .info {
+    font-size: 14px;
+    color: #999;
+    margin-top: 10px;
+}
+.result-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+.result-box.win {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+}
+.result-box.lose {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+}
+.result-box .icon {
+    font-size: 72px;
+    margin-bottom: 15px;
+}
+.result-box .title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+.result-box .amount {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+.result-box .btn-close-result {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+</style>
+
+<!-- 倒计时弹窗 -->
+<div class="countdown-modal" id="countdownModal">
+    <div class="countdown-box">
+        <div class="label">⏳ 请等待结果...</div>
+        <div class="timer" id="cdTimer">30</div>
+        <div class="info" id="cdInfo">方向：买涨</div>
+    </div>
+</div>
+
+<!-- 结果弹窗 -->
+<div class="countdown-modal" id="resultModal">
+    <div class="result-box" id="resultBox">
+        <div class="icon" id="resultIcon"></div>
+        <div class="title" id="resultTitle"></div>
+        <div class="amount" id="resultAmount"></div>
+        <button class="btn-close-result" onclick="closeResult()">确定</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    var cdOrderId = null;
+    var cdTimerInterval = null;
+    var cdPollInterval = null;
+
+    window.startCountdown = function(order) {
+        cdOrderId = order.id;
+
+        document.getElementById('cdTimer').textContent = order.duration;
+        document.getElementById('cdInfo').textContent = '方向：' + (order.direction === 'up' ? '买涨' : '买跌') + ' | 金额：' + order.amount + ' USDT';
+
+        document.getElementById('countdownModal').classList.add('show');
+
+        var remaining = order.duration;
+        cdTimerInterval = setInterval(function() {
+            remaining--;
+            if (remaining <= 0) {
+                clearInterval(cdTimerInterval);
+                document.getElementById('cdTimer').textContent = '0';
+            } else {
+                document.getElementById('cdTimer').textContent = remaining;
+            }
+        }, 1000);
+
+        cdPollInterval = setInterval(async function() {
+            try {
+                var res = await fetch('/api/trade-countdown/result/' + cdOrderId + '?t=' + Date.now());
+                var data = await res.json();
+                if (data.success && data.order.status === 'settled') {
+                    clearInterval(cdPollInterval);
+                    clearInterval(cdTimerInterval);
+                    showCountdownResult(data.order);
+                }
+            } catch (e) {}
+        }, 1000);
+    };
+
+    function showCountdownResult(order) {
+        document.getElementById('countdownModal').classList.remove('show');
+
+        var box = document.getElementById('resultBox');
+        if (order.result === 'win') {
+            box.className = 'result-box win';
+            document.getElementById('resultIcon').textContent = '🎉';
+            document.getElementById('resultTitle').textContent = '恭喜你赢了！';
+            document.getElementById('resultAmount').textContent = '+' + order.profit.toFixed(2) + ' USDT';
+        } else {
+            box.className = 'result-box lose';
+            document.getElementById('resultIcon').textContent = '😢';
+            document.getElementById('resultTitle').textContent = '很遗憾，你输了';
+            document.getElementById('resultAmount').textContent = '-' + order.amount.toFixed(2) + ' USDT';
+        }
+
+        document.getElementById('resultModal').classList.add('show');
+    }
+
+    window.closeResult = function() {
+        document.getElementById('resultModal').classList.remove('show');
+        cdOrderId = null;
+    };
+})();
+</script>

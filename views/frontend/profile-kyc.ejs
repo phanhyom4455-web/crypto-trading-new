@@ -1,0 +1,272 @@
+<!-- 实名认证功能 -->
+<% if (user) { %>
+<style>
+.kyc-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.kyc-section h5 {
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.kyc-status {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.kyc-status-unverified {
+    background: #f3f4f6;
+    color: #666;
+}
+.kyc-status-pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+.kyc-status-approved {
+    background: #d1fae5;
+    color: #059669;
+}
+.kyc-status-rejected {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.kyc-form {
+    display: none;
+}
+.kyc-form .form-group {
+    margin-bottom: 15px;
+}
+.kyc-form label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 14px;
+}
+.kyc-form input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e8ecf1;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+.kyc-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+.kyc-submit-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+}
+.kyc-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+}
+.kyc-message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: none;
+}
+.kyc-message.success {
+    background: #d1fae5;
+    color: #059669;
+}
+.kyc-message.error {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.kyc-approved-box {
+    background: #d1fae5;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    color: #059669;
+    font-weight: 600;
+}
+.kyc-pending-box {
+    background: #fef3c7;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    color: #d97706;
+    font-weight: 600;
+}
+</style>
+
+<div class="kyc-section">
+    <h5>
+        <span><i class="fas fa-shield-alt text-primary me-2"></i>实名认证</span>
+        <span class="kyc-status kyc-status-unverified" id="kycStatus">未认证</span>
+    </h5>
+    
+    <!-- 提示消息 -->
+    <div class="kyc-message" id="kycMessage"></div>
+    
+    <!-- 已认证 -->
+    <div class="kyc-approved-box" id="kycApprovedBox" style="display: none;">
+        <i class="fas fa-check-circle fa-2x mb-2"></i>
+        <p>✅ 您已完成实名认证</p>
+    </div>
+    
+    <!-- 待审核 -->
+    <div class="kyc-pending-box" id="kycPendingBox" style="display: none;">
+        <i class="fas fa-clock fa-2x mb-2"></i>
+        <p>⏳ 认证审核中，请耐心等待</p>
+    </div>
+    
+    <!-- 认证表单 -->
+    <div class="kyc-form" id="kycForm">
+        <div class="form-group">
+            <label>真实姓名</label>
+            <input type="text" id="kycRealName" placeholder="请输入真实姓名">
+        </div>
+        
+        <div class="form-group">
+            <label>身份证号</label>
+            <input type="text" id="kycIdCard" placeholder="请输入身份证号">
+        </div>
+        
+        <div class="form-group">
+            <label>手机号</label>
+            <input type="tel" id="kycPhone" placeholder="请输入手机号">
+        </div>
+        
+        <button class="kyc-submit-btn" onclick="submitKYC()">
+            <i class="fas fa-paper-plane me-2"></i>提交认证
+        </button>
+    </div>
+</div>
+
+<script>
+// 检查实名认证状态
+async function checkKYCStatus() {
+    try {
+        const response = await fetch('/api/me');
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+            const status = data.user.verify_status;
+            const statusEl = document.getElementById('kycStatus');
+            const form = document.getElementById('kycForm');
+            const approvedBox = document.getElementById('kycApprovedBox');
+            const pendingBox = document.getElementById('kycPendingBox');
+            
+            if (status === 'approved') {
+                statusEl.className = 'kyc-status kyc-status-approved';
+                statusEl.textContent = '已认证';
+                form.style.display = 'none';
+                approvedBox.style.display = 'block';
+                pendingBox.style.display = 'none';
+            } else if (status === 'pending') {
+                statusEl.className = 'kyc-status kyc-status-pending';
+                statusEl.textContent = '审核中';
+                form.style.display = 'none';
+                approvedBox.style.display = 'none';
+                pendingBox.style.display = 'block';
+            } else if (status === 'rejected') {
+                statusEl.className = 'kyc-status kyc-status-rejected';
+                statusEl.textContent = '未通过';
+                form.style.display = 'block';
+                approvedBox.style.display = 'none';
+                pendingBox.style.display = 'none';
+            } else {
+                statusEl.className = 'kyc-status kyc-status-unverified';
+                statusEl.textContent = '未认证';
+                form.style.display = 'block';
+                approvedBox.style.display = 'none';
+                pendingBox.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.log('检查认证状态失败');
+    }
+}
+
+// 提交实名认证
+async function submitKYC() {
+    const realName = document.getElementById('kycRealName').value.trim();
+    const idCard = document.getElementById('kycIdCard').value.trim();
+    const phone = document.getElementById('kycPhone').value.trim();
+    const msg = document.getElementById('kycMessage');
+    
+    // 验证
+    if (!realName || realName.length < 2) {
+        msg.className = 'kyc-message error';
+        msg.textContent = '❌ 请输入正确的真实姓名';
+        msg.style.display = 'block';
+        return;
+    }
+    if (!idCard || idCard.length < 15) {
+        msg.className = 'kyc-message error';
+        msg.textContent = '❌ 请输入正确的身份证号';
+        msg.style.display = 'block';
+        return;
+    }
+    if (!phone || phone.length < 11) {
+        msg.className = 'kyc-message error';
+        msg.textContent = '❌ 请输入正确的手机号';
+        msg.style.display = 'block';
+        return;
+    }
+    
+    const btn = document.querySelector('.kyc-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>提交中...';
+    
+    try {
+        const response = await fetch('/api/complete-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                real_name: realName,
+                id_card: idCard,
+                phone: phone
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            msg.className = 'kyc-message success';
+            msg.textContent = '✅ 提交成功！请等待审核';
+            msg.style.display = 'block';
+            
+            setTimeout(() => {
+                checkKYCStatus();
+            }, 1500);
+        } else {
+            msg.className = 'kyc-message error';
+            msg.textContent = data.message || '提交失败';
+            msg.style.display = 'block';
+        }
+    } catch (error) {
+        msg.className = 'kyc-message error';
+        msg.textContent = '网络错误，请重试';
+        msg.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>提交认证';
+    }
+}
+
+// 初始化
+checkKYCStatus();
+</script>
+<% } %>

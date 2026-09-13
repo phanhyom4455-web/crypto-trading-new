@@ -1,0 +1,173 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid">
+    <div class="row">
+        <%- include('../includes/admin-sidebar') %>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-exchange-alt me-2 text-primary"></i>交易管理</h1>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="enableSound()" id="soundBtn">
+                        <i class="fas fa-volume-up"></i> 启用声音
+                    </button>
+                    <span class="badge bg-info">实时交易: <span id="tradeCount">0</span></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                 <tr>
+                                 <th>用户</th>
+                                 <th>方向</th>
+                                <th>时间</th>
+                                <th>金额</th>
+                               <th>盈利比例</th>
+                               <th>结果</th>
+                              <th>盈亏</th>
+                             <th>创建时间</th>
+                             <th>操作</th>
+                          </tr>
+                         </thead>
+                            <tbody id="tradeList">
+                                <tr><td colspan="9" class="text-center text-muted py-4">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ============================================
+    // 声音系统
+    // ============================================
+    let soundEnabled = false;
+    let audioCtx = null;
+
+    function enableSound() {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            soundEnabled = true;
+            document.getElementById('soundBtn').innerHTML = '<i class="fas fa-volume-up"></i> 声音已启用 ✅';
+            document.getElementById('soundBtn').className = 'btn btn-sm btn-success me-2';
+            playTestSound();
+            alert('🔊 声音已启用！');
+        } catch (e) {
+            alert('❌ 无法启用声音，请检查浏览器设置');
+        }
+    }
+
+    function playTestSound() {
+        playBeep(880, 0.1);
+        setTimeout(() => playBeep(1100, 0.1), 120);
+        setTimeout(() => playBeep(1320, 0.15), 240);
+    }
+
+    function playBeep(frequency, duration, type) {
+        if (!soundEnabled || !audioCtx) return;
+        try {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = frequency;
+            oscillator.type = type || 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        } catch (e) {}
+    }
+
+    function playTradeSound() {
+        if (!soundEnabled) return;
+        playBeep(523, 0.08);
+        setTimeout(() => playBeep(659, 0.08), 90);
+        setTimeout(() => playBeep(784, 0.12), 180);
+    }
+
+    // ============================================
+    // 设置输赢
+    // ============================================
+    async function setTradeResult(tradeId, result) {
+        if (!confirm('确定设为 ' + (result === 'win' ? '赢' : '输') + ' 吗？')) return;
+
+        try {
+            const response = await fetch('/api/admin/trade-countdown/set-result', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: tradeId, result: result })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert('✅ ' + data.message);
+                loadTrades();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        } catch (e) {
+            alert('❌ 请求失败');
+        }
+    }
+
+    // ============================================
+    // 加载交易记录
+    // ============================================
+    let previousTradeCount = 0;
+
+           async function loadTrades() {
+        try {
+            const response = await fetch('/api/admin/trade-countdown/orders');
+            const data = await response.json();
+            const tbody = document.getElementById('tradeList');
+
+            if (data.success && data.orders && data.orders.length > 0) {
+                let html = '';
+                data.orders.forEach(t => {
+                    html += `
+                        <tr>
+                            <td><strong>${t.username}</strong></td>
+                            <td>${t.direction === 'up' ? '买涨' : '买跌'}</td>
+                            <td><span class="badge bg-info">${t.duration}秒</span></td>
+                            <td>$${parseFloat(t.amount).toFixed(2)}</td>
+                            <td>${(t.profit_rate * 100).toFixed(0)}%</td>
+                            <td>
+                                ${t.result === 'win' ? '<span class="badge bg-success">赢</span>' : 
+                                  t.result === 'lose' ? '<span class="badge bg-danger">输</span>' : 
+                                  '<span class="badge bg-warning">待定</span>'}
+                            </td>
+                            <td>${t.profit ? (t.profit > 0 ? '+' : '') + parseFloat(t.profit).toFixed(2) : '-'}</td>
+                            <td>${new Date(t.created_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="setTradeResult(${t.id}, 'win')">设为赢</button>
+                                <button class="btn btn-sm btn-danger" onclick="setTradeResult(${t.id}, 'lose')">设为输</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+                document.getElementById('tradeCount').textContent = data.orders.length;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">暂无交易记录</td></tr>`;
+                document.getElementById('tradeCount').textContent = 0;
+            }
+        } catch (error) {
+            console.error('加载交易记录失败:', error);
+            document.getElementById('tradeList').innerHTML = `
+                <tr><td colspan="9" class="text-center text-danger py-4">加载失败，请刷新重试</td></tr>
+            `;
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTrades();
+        setInterval(loadTrades, 3000);
+    });
+</script>
+</body>
+</html>

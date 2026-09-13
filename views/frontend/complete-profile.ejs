@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完善资料 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .container-box .logo { text-align: center; margin-bottom: 30px; }
+        .container-box .logo i { font-size: 48px; color: #667eea; }
+        .container-box h3 { font-weight: 800; text-align: center; }
+        .form-control { border-radius: 10px; padding: 12px 16px; border: 2px solid #e5e7eb; }
+        .form-control:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            color: #fff;
+            width: 100%;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+        .alert { border-radius: 10px; padding: 12px 16px; }
+        .alert-danger { background: #fee2e2; color: #991b1b; border: none; }
+        .alert-success { background: #d1fae5; color: #065f46; border: none; }
+        .alert-warning { background: #fef3c7; color: #92400e; border: none; }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <div class="container-box">
+        <div class="logo"><i class="fas fa-coins"></i></div>
+        <h3>完善资料</h3>
+        <p class="text-muted text-center mb-4">请完善您的个人信息，等待审核通过后即可交易</p>
+
+        <div id="message" style="display: none;" class="alert mb-3"></div>
+
+        <!-- 审核状态 -->
+        <div id="statusSection" style="display: none;" class="text-center mb-4">
+            <p>审核状态：<span id="verifyStatus" class="status-badge status-pending">待审核</span></p>
+            <p id="verifyNote" class="text-muted small"></p>
+        </div>
+
+        <!-- 完善资料表单 -->
+        <form id="profileForm" onsubmit="submitProfile(event)">
+            <div class="mb-3">
+                <label class="fw-bold">真实姓名</label>
+                <input type="text" class="form-control" id="realName" placeholder="请输入真实姓名" required>
+            </div>
+            <div class="mb-3">
+                <label class="fw-bold">身份证号</label>
+                <input type="text" class="form-control" id="idCard" placeholder="请输入身份证号" required>
+            </div>
+            <div class="mb-3">
+                <label class="fw-bold">手机号</label>
+                <input type="tel" class="form-control" id="phone" placeholder="请输入手机号" required>
+            </div>
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <span id="btnText"><i class="fas fa-paper-plane me-2"></i>提交审核</span>
+                <span id="btnLoading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> 提交中...</span>
+            </button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="/" class="text-muted">返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        let userId = null;
+
+        // 获取用户信息
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/me');
+                const data = await response.json();
+                if (data.success && data.user) {
+                    userId = data.user.id;
+                    const status = data.user.verify_status || 'pending';
+                    document.getElementById('verifyStatus').textContent = 
+                        status === 'pending' ? '⏳ 待审核' :
+                        status === 'approved' ? '✅ 已通过' : '❌ 已拒绝';
+                    document.getElementById('verifyStatus').className = 'status-badge status-' + status;
+                    
+                    if (data.user.verify_note) {
+                        document.getElementById('verifyNote').textContent = '备注：' + data.user.verify_note;
+                    }
+
+                    // 如果已通过，显示提示
+                    if (status === 'approved') {
+                        document.getElementById('statusSection').style.display = 'block';
+                        document.getElementById('profileForm').style.display = 'none';
+                        document.querySelector('.btn-submit').style.display = 'none';
+                        showMessage('✅ 您的资料已审核通过，可以开始交易了！', 'success');
+                        setTimeout(() => { window.location.href = '/'; }, 3000);
+                        return;
+                    }
+
+                    // 如果已拒绝，显示原因
+                    if (status === 'rejected') {
+                        document.getElementById('statusSection').style.display = 'block';
+                        showMessage('❌ 您的资料审核未通过，请重新提交', 'danger');
+                        return;
+                    }
+
+                    // 待审核
+                    document.getElementById('statusSection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+            }
+        }
+
+        function showMessage(message, type) {
+            const msg = document.getElementById('message');
+            msg.style.display = 'block';
+            msg.textContent = message;
+            msg.className = 'alert mb-3 ' + (type === 'success' ? 'alert-success' : type === 'warning' ? 'alert-warning' : 'alert-danger');
+            setTimeout(() => { msg.style.display = 'none'; }, 5000);
+        }
+
+        // 提交资料审核
+        async function submitProfile(event) {
+            event.preventDefault();
+
+            const realName = document.getElementById('realName').value.trim();
+            const idCard = document.getElementById('idCard').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            if (!realName || realName.length < 2) {
+                showMessage('请输入真实姓名', 'danger');
+                return;
+            }
+            if (!idCard || idCard.length < 15) {
+                showMessage('请输入正确的身份证号', 'danger');
+                return;
+            }
+            if (!phone || phone.length < 11) {
+                showMessage('请输入正确的手机号', 'danger');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            document.getElementById('btnText').style.display = 'none';
+            document.getElementById('btnLoading').style.display = 'inline';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/complete-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ real_name: realName, id_card: idCard, phone })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('✅ 资料提交成功！请等待管理员审核', 'success');
+                    setTimeout(() => { loadUserInfo(); }, 1500);
+                } else {
+                    showMessage('❌ ' + data.message, 'danger');
+                }
+            } catch (error) {
+                showMessage('❌ 提交失败，请重试', 'danger');
+            } finally {
+                document.getElementById('btnText').style.display = 'inline';
+                document.getElementById('btnLoading').style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserInfo);
+    </script>
+</body>
+</html>

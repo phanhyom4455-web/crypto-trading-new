@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f0f2f5; padding-bottom: 120px; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 12px 0; box-shadow: 0 4px 20px rgba(102,126,234,0.3); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .navbar-brand { color: #fff !important; font-weight: 800; font-size: 24px; }
+        .navbar-brand i { margin-right: 10px; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; padding: 8px 18px !important; border-radius: 8px; transition: all 0.3s; }
+        .nav-link:hover, .nav-link.active { color: #fff !important; background: rgba(255,255,255,0.15); }
+        .nav-link i { margin-right: 6px; }
+        .btn-login { color: #fff !important; border: 2px solid rgba(255,255,255,0.4); border-radius: 50px; padding: 8px 24px; background: transparent; }
+        .btn-login:hover { background: rgba(255,255,255,0.15); }
+        .btn-register { background: #fff; color: #667eea !important; border: none; border-radius: 50px; padding: 8px 24px; font-weight: 600; }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: none; padding: 8px; }
+        .dropdown-item { border-radius: 8px; padding: 10px 20px; }
+        .dropdown-item:hover { background: #f3f4f6; }
+        .dropdown-item i { width: 20px; margin-right: 10px; color: #667eea; }
+        .stat-card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: none; transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 40px rgba(102,126,234,0.12); }
+        .stat-card .icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
+        .stat-card .number { font-size: 28px; font-weight: 800; margin: 8px 0 4px; }
+        .stat-card .label { color: #6b7280; font-size: 14px; }
+        .bg-primary-gradient { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .bg-success-gradient { background: linear-gradient(135deg, #10b981, #059669); }
+        .bg-warning-gradient { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .bg-info-gradient { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .chart-container { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+        .chart-container h6 { font-weight: 700; margin-bottom: 15px; }
+        .pair-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; transition: 0.2s; cursor: pointer; }
+        .pair-item:hover { background: #f9fafb; }
+        .pair-item .name { font-weight: 600; }
+        .pair-item .price { font-weight: 700; }
+        .pair-item .change.up { color: #10b981; }
+        .pair-item .change.down { color: #ef4444; }
+        .footer { background: #1a202c; color: rgba(255,255,255,0.7); padding: 30px 0; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; z-index: 999; }
+        .footer a { color: rgba(255,255,255,0.6); text-decoration: none; display: block; padding: 4px 0; }
+        .footer a:hover { color: #fff; }
+        .footer h5 { color: #fff; font-weight: 700; }
+        .welcome-banner { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; padding: 30px; color: #fff; }
+        .welcome-banner h3 { font-weight: 800; }
+        .welcome-banner .btn { border-radius: 50px; padding: 10px 30px; font-weight: 600; }
+        .quick-card { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: none; transition: 0.3s; cursor: pointer; text-align: center; }
+        .quick-card:hover { transform: translateY(-6px); box-shadow: 0 10px 40px rgba(102,126,234,0.15); }
+        .quick-card i { font-size: 32px; margin-bottom: 12px; }
+        .quick-card h6 { font-weight: 700; margin-bottom: 4px; }
+        .quick-card p { color: #6b7280; font-size: 13px; margin: 0; }
+        @media (max-width: 768px) {
+            .stat-card .number { font-size: 20px; }
+            .welcome-banner h3 { font-size: 20px; }
+            .welcome-banner .btn { padding: 8px 20px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 导航栏 ===== -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins"></i>CoinTrade</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link active" href="/"><i class="fas fa-home"></i><span data-i18n="nav_home">首页</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/assets"><i class="fas fa-wallet"></i><span data-i18n="nav_assets">我的资产</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market"><i class="fas fa-chart-line"></i><span data-i18n="nav_market">行情</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit"><i class="fas fa-arrow-down"></i><span data-i18n="nav_deposit">充值</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/withdraw"><i class="fas fa-arrow-up"></i><span data-i18n="nav_withdraw">提现</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/exchange"><i class="fas fa-exchange-alt"></i><span data-i18n="nav_exchange">兑换</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/history"><i class="fas fa-history"></i><span data-i18n="nav_history">交易记录</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/help"><i class="fas fa-question-circle"></i><span data-i18n="nav_help">帮助</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/faq"><i class="fas fa-info-circle"></i><span data-i18n="nav_help">常见问题</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about"><i class="fas fa-info-circle"></i><span data-i18n="nav_about">关于</span></a></li>
+                </ul>
+                 <div class="d-flex align-items-center gap-2">
+
+                    <!-- 语言切换下拉菜单 -->
+                    <div class="dropdown">
+                        <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" style="color:#fff;border:1px solid rgba(255,255,255,0.4);background:transparent;border-radius:8px;padding:5px 12px;font-size:13px;">
+                            🌐 <span id="currentLangLabel">中文</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="setLang('zh')" data-lang-btn="zh">🇨🇳 中文</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="setLang('en')" data-lang-btn="en">🇺🇸 English</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="setLang('lo')" data-lang-btn="lo">🇱🇦 ລາວ</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="setLang('th')" data-lang-btn="th">🇹🇭 ไทย</a></li>
+                        </ul>
+                    </div>
+
+
+                    <a href="/support" target="_blank" class="btn btn-light btn-sm ms-2">
+                        <i class="fas fa-headset me-1"></i>联系客服
+                    </a>
+                    <% if (user) { %>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle d-flex align-items-center gap-2" style="color: #fff; border: none; padding: 4px 12px;" data-bs-toggle="dropdown">
+                                <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                                <span><%= user.username %></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                                <li><a class="dropdown-item" href="/deposit"><i class="fas fa-arrow-down"></i>充值</a></li>
+                                <li><a class="dropdown-item" href="/withdraw"><i class="fas fa-arrow-up"></i>提现</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/api/logout"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-login"><i class="fas fa-sign-in-alt"></i>登录</a>
+                        <a href="/register" class="btn btn-register"><i class="fas fa-user-plus"></i>注册</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== 主内容 ===== -->
+    <div class="container py-4">
+        <!-- 欢迎横幅 -->
+        <div class="welcome-banner mb-4">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h3><i class="fas fa-hand-wave me-2"></i><%= user ? '欢迎回来，' + user.username + '！' : '欢迎来到 CoinTrade' %></h3>
+                    <p class="opacity-75 mb-0"><%= user ? '您的数字资产交易之旅从这里继续' : '开始您的数字资产交易之旅' %></p>
+                </div>
+                 <%- include('index-assets-v2') %>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a href="/market" class="btn btn-light">
+                        <i class="fas fa-chart-line me-2"></i>开始交易
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between">
+                        <div class="icon bg-primary-gradient"><i class="fas fa-users"></i></div>
+                        <span class="badge bg-success bg-opacity-10 text-success">+12%</span>
+                    </div>
+                    <div class="number" id="statUsers">15,243</div>
+                    <div class="label">注册用户</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between">
+                        <div class="icon bg-success-gradient"><i class="fas fa-exchange-alt"></i></div>
+                        <span class="badge bg-success bg-opacity-10 text-success">+8%</span>
+                    </div>
+                    <div class="number" id="statTrades">45,230</div>
+                    <div class="label">总交易数</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between">
+                        <div class="icon bg-warning-gradient"><i class="fas fa-dollar-sign"></i></div>
+                        <span class="badge bg-success bg-opacity-10 text-success">+15%</span>
+                    </div>
+                    <div class="number" id="statVolume">¥2.8M</div>
+                    <div class="label">总交易额</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between">
+                        <div class="icon bg-info-gradient"><i class="fas fa-circle"></i></div>
+                        <span class="badge bg-success bg-opacity-10 text-success">在线</span>
+                    </div>
+                    <div class="number" id="statOnline">89</div>
+                    <div class="label">在线用户</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表和交易对 -->
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="chart-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6><i class="fas fa-chart-line text-primary me-2"></i>BTC/USDT 走势图</h6>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changePeriod('1H')">1H</button>
+                            <button class="btn btn-sm btn-outline-secondary active" onclick="changePeriod('1D')">1D</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changePeriod('1W')">1W</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changePeriod('1M')">1M</button>
+                        </div>
+                    </div>
+                    <%- include('index-chart') %>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-container">
+                    <h6><i class="fas fa-list text-primary me-2"></i>热门交易对</h6>
+                    <div class="mt-2">
+                        <div class="pair-item">
+                            <span class="name">BTC/USDT</span>
+                            <span class="price">$62,450</span>
+                            <span class="change up">+2.35%</span>
+                        </div>
+                        <div class="pair-item">
+                            <span class="name">ETH/USDT</span>
+                            <span class="price">$2,450</span>
+                            <span class="change down">-1.20%</span>
+                        </div>
+                        <div class="pair-item">
+                            <span class="name">ADA/USDT</span>
+                            <span class="price">$0.452</span>
+                            <span class="change up">+5.60%</span>
+                        </div>
+                        <div class="pair-item">
+                            <span class="name">DOT/USDT</span>
+                            <span class="price">$6.250</span>
+                            <span class="change up">+3.80%</span>
+                        </div>
+                        <div class="pair-item">
+                            <span class="name">SOL/USDT</span>
+                            <span class="price">$25.80</span>
+                            <span class="change up">+4.20%</span>
+                        </div>
+                        <div class="pair-item">
+                            <span class="name">AVAX/USDT</span>
+                            <span class="price">$14.20</span>
+                            <span class="change up">+6.80%</span>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="/market" class="btn btn-outline-primary btn-sm">查看全部 →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ===== K线图 =====
+        
+            const option = {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '5%', right: '5%', bottom: '10%', top: '10%' },
+                xAxis: { type: 'category', data: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'], axisLine: { show: false } },
+                yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f0f0f0' } } },
+                series: [{
+                    name: '价格', type: 'candlestick',
+                    data: [[62000, 62500, 61800, 62450], [62450, 62800, 62200, 62600], [62600, 63200, 62500, 63000], [63000, 63500, 62800, 63300], [63300, 63800, 63100, 63500], [63500, 64000, 63300, 63800], [63800, 64200, 63600, 64000]],
+                    itemStyle: { color: '#10b981', color0: '#ef4444', borderColor: '#10b981', borderColor0: '#ef4444' }
+                }]
+            };
+            myChart.setOption(option);
+            window.addEventListener('resize', () => myChart.resize());
+        }
+
+        // ===== 切换周期 =====
+        function changePeriod(period) {
+            document.querySelectorAll('.chart-container .btn-outline-secondary').forEach(b => b.classList.remove('active'));
+            if (event && event.target) { event.target.classList.add('active'); }
+        }
+
+        // ===== 统计数据动画 =====
+        function animateNumber(el, target) {
+            if (!el) return;
+            let current = 0;
+            const step = Math.ceil(target / 50);
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    el.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    el.textContent = current.toLocaleString();
+                }
+            }, 30);
+        }
+
+        // ===== 加载统计 =====
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                animateNumber(document.getElementById('statUsers'), data.totalUsers || 15243);
+                animateNumber(document.getElementById('statTrades'), data.totalOrders || 45230);
+                if (data.totalRevenue > 1000000) {
+                    document.getElementById('statVolume').textContent = '¥' + (data.totalRevenue / 1000000).toFixed(1) + 'M';
+                } else {
+                    animateNumber(document.getElementById('statVolume'), data.totalRevenue || 2847560);
+                }
+                animateNumber(document.getElementById('statOnline'), data.onlineUsers || 89);
+            } catch(e) {
+                console.log('加载统计失败');
+            }
+        }
+        loadStats();
+    </script>
+
+    <%- include('index-mobile') %>
+    <%- include('index-mobile-fix') %>
+    <%- include('index-enhance') %>
+    
+    <%- include('index-partners') %>
+   <%- include('../includes/bottom-nav') %>
+
+<!-- 多语言支持 -->
+<script src="/js/lang.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/i18n-label.js"></script>
+</body>
+</html>

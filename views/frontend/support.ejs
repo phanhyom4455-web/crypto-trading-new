@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联系我们 - 数字货币交易平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .support-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .support-header { text-align: center; margin-bottom: 30px; }
+        .support-header .icon { font-size: 64px; margin-bottom: 10px; }
+        .support-header h1 { font-size: 28px; color: #333; margin-bottom: 8px; }
+        .support-header p { color: #888; font-size: 14px; }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #e8ecf1;
+            transition: all 0.3s;
+        }
+        .contact-item:hover {
+            background: #eef2ff;
+            border-color: #667eea;
+        }
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            background: #667eea;
+            color: white;
+        }
+        .contact-info h3 { font-size: 14px; color: #333; margin-bottom: 4px; }
+        .contact-info p { font-size: 13px; color: #666; }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="support-container">
+        <div class="support-header">
+            <div class="icon">🎧</div>
+            <h1>联系我们</h1>
+            <p>我们随时为您提供帮助</p>
+        </div>
+        
+        <div class="contact-item">
+            <div class="contact-icon">📞</div>
+            <div class="contact-info">
+                <h3>客服热线</h3>
+                <p>+856 20 5555 5555</p>
+            </div>
+        </div>
+        
+        <div class="contact-item">
+            <div class="contact-icon">📧</div>
+            <div class="contact-info">
+                <h3>客服邮箱</h3>
+                <p>support@yourplatform.com</p>
+            </div>
+        </div>
+        
+        <div class="contact-item">
+            <div class="contact-icon">💬</div>
+            <div class="contact-info">
+                <h3>在线客服</h3>
+                <p>Telegram / WhatsApp / Line</p>
+            </div>
+        </div>
+        
+        <div class="contact-item">
+            <div class="contact-icon">⏰</div>
+            <div class="contact-info">
+                <h3>服务时间</h3>
+                <p>7 x 24 小时全天候服务</p>
+            </div>
+        </div>
+        
+        <a href="/login" class="btn">← 返回登录</a>
+        
+        <div class="back-link">
+            <a href="/">返回首页</a>
+        </div>
+    </div>
+</body>
+</html>

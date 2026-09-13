@@ -1,0 +1,159 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid">
+    <div class="row">
+        <%- include('../includes/admin-sidebar') %>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-user-check me-2"></i>用户审核</h1>
+                <span class="badge bg-warning">待审核: <span id="pendingCount">0</span></span>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>真实姓名</th>
+                                    <th>身份证号</th>
+                                    <th>手机号</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userList">
+                                <tr><td colspan="8" class="text-center text-muted py-4">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- 审核弹窗 -->
+<div class="modal fade" id="verifyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-gavel me-2"></i>审核用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>审核用户：<strong id="verifyUsername"></strong></p>
+                <div class="mb-3">
+                    <label class="fw-bold">审核结果</label>
+                    <select class="form-control" id="verifyAction">
+                        <option value="approved">✅ 通过</option>
+                        <option value="rejected">❌ 拒绝</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">备注</label>
+                    <textarea class="form-control" id="verifyNote" placeholder="请输入审核备注（可选）"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="confirmVerify()">
+                    <i class="fas fa-check"></i> 确认审核
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    let allUsers = [];
+    let verifyUserId = null;
+
+    async function loadUsers() {
+        try {
+            const response = await fetch('/api/users');
+            const data = await response.json();
+            allUsers = data;
+            renderUsers(allUsers);
+        } catch (error) {
+            document.getElementById('userList').innerHTML = `
+                <tr><td colspan="8" class="text-center text-danger py-4">加载失败</td></tr>
+            `;
+        }
+    }
+
+    function renderUsers(users) {
+        const tbody = document.getElementById('userList');
+        let pendingCount = 0;
+
+        let html = '';
+        users.forEach(user => {
+            if (user.verify_status === 'pending') pendingCount++;
+            const statusMap = {
+                'pending': '<span class="badge bg-warning">待审核</span>',
+                'approved': '<span class="badge bg-success">已通过</span>',
+                'rejected': '<span class="badge bg-danger">已拒绝</span>'
+            };
+            html += `
+                <tr>
+                    <td>${user.id}</td>
+                    <td><strong>${user.username}</strong></td>
+                    <td>${user.email || '-'}</td>
+                    <td>${user.real_name || '-'}</td>
+                    <td>${user.id_card || '-'}</td>
+                    <td>${user.phone || '-'}</td>
+                    <td>${statusMap[user.verify_status] || statusMap.pending}</td>
+                    <td>
+                        ${user.verify_status === 'pending' ? `
+                            <button class="btn btn-sm btn-primary" onclick="openVerifyModal(${user.id}, '${user.username}')">
+                                <i class="fas fa-gavel"></i> 审核
+                            </button>
+                        ` : '<span class="text-muted">已处理</span>'}
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        document.getElementById('pendingCount').textContent = pendingCount;
+    }
+
+    function openVerifyModal(userId, username) {
+        verifyUserId = userId;
+        document.getElementById('verifyUsername').textContent = username;
+        document.getElementById('verifyAction').value = 'approved';
+        document.getElementById('verifyNote').value = '';
+        new bootstrap.Modal(document.getElementById('verifyModal')).show();
+    }
+
+    async function confirmVerify() {
+        const action = document.getElementById('verifyAction').value;
+        const note = document.getElementById('verifyNote').value;
+
+        try {
+            const response = await fetch('/api/admin/verify-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: verifyUserId,
+                    action: action,
+                    note: note
+                })
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('verifyModal')).hide();
+                loadUsers();
+            }
+        } catch (error) {
+            alert('操作失败，请重试');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!-- ============================================ -->
+<!-- 实名认证表单校验修复 -->
+<!-- ============================================ -->
+<script>
+(function() {
+    // 等页面加载完成
+    function fixKYCValidation() {
+        // 找到提交按钮
+        var submitBtn = document.querySelector('.kyc-submit-btn');
+        if (!submitBtn) {
+            // 如果没找到，等 500ms 再试
+            setTimeout(fixKYCValidation, 500);
+            return;
+        }
+
+        // 移除原有事件，重新绑定
+        var form = document.getElementById('kycForm');
+        if (!form) return;
+
+        // 克隆表单，移除所有事件监听
+        var newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        // 重新绑定提交事件
+        newForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            var realName = document.getElementById('kycRealName').value.trim();
+            var idCard = document.getElementById('kycIdCard').value.trim();
+            var phone = document.getElementById('kycPhone').value.trim();
+            var msg = document.getElementById('kycMessage');
+
+            // 只检查是否填写
+            if (!realName) {
+                showMsg(msg, 'error', '❌ 请输入真实姓名');
+                return;
+            }
+            if (!idCard) {
+                showMsg(msg, 'error', '❌ 请输入身份证号');
+                return;
+            }
+            if (!phone) {
+                showMsg(msg, 'error', '❌ 请输入手机号');
+                return;
+            }
+
+            // 检查身份证：只要数字
+            if (!/^\d+$/.test(idCard)) {
+                showMsg(msg, 'error', '❌ 身份证号只能输入数字');
+                return;
+            }
+            // 检查手机号：只要数字
+            if (!/^\d+$/.test(phone)) {
+                showMsg(msg, 'error', '❌ 手机号只能输入数字');
+                return;
+            }
+
+            var btn = newForm.querySelector('.kyc-submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>提交中...';
+
+            try {
+                var response = await fetch('/api/complete-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        real_name: realName,
+                        id_card: idCard,
+                        phone: phone
+                    })
+                });
+
+                var data = await response.json();
+
+                if (data.success) {
+                    showMsg(msg, 'success', '✅ 提交成功！请等待审核');
+                    setTimeout(function() {
+                        if (typeof checkKYCStatus === 'function') {
+                            checkKYCStatus();
+                        }
+                    }, 1500);
+                } else {
+                    showMsg(msg, 'error', data.message || '提交失败');
+                }
+            } catch (error) {
+                showMsg(msg, 'error', '网络错误，请重试');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>提交认证';
+            }
+        });
+
+        function showMsg(el, type, text) {
+            el.className = 'kyc-message ' + type;
+            el.textContent = text;
+            el.style.display = 'block';
+        }
+    }
+
+    // 页面加载后执行
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixKYCValidation);
+    } else {
+        fixKYCValidation();
+    }
+})();
+</script>

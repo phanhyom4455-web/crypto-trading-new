@@ -1,0 +1,33 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-credit-card me-2 text-primary"></i>支付渠道</h4>
+        <button class="btn btn-primary"><i class="fas fa-plus me-1"></i>添加渠道</button>
+    </div>
+
+    <div class="row">
+        <% channels.forEach(channel => { %>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5><%= channel.name %></h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" <%= channel.enabled ? 'checked' : '' %>>
+                        </div>
+                    </div>
+                    <p>手续费: <strong><%= channel.fee %>%</strong></p>
+                    <p>状态: <span class="badge bg-<%= channel.status === 'active' ? 'success' : 'danger' %>">
+                        <%= channel.status === 'active' ? '启用' : '停用' %>
+                    </span></p>
+                    <button class="btn btn-sm btn-outline-primary">配置</button>
+                    <button class="btn btn-sm btn-outline-danger">删除</button>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!-- ============================================ -->
+<!-- TradingView 真实K线图 -->
+<!-- ============================================ -->
+<style>
+.tv-chart-container {
+    height: 350px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #1e222d;
+}
+</style>
+
+<div class="tv-chart-container">
+    <div id="tradingview_index_chart" style="height:100%;width:100%;"></div>
+</div>
+
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script type="text/javascript">
+(function() {
+    function loadIndexChart() {
+        var container = document.getElementById('tradingview_index_chart');
+        if (!container) return;
+        container.innerHTML = '';
+
+        new TradingView.widget({
+            "width": "100%",
+            "height": 350,
+            "symbol": "BITSTAMP:BTCUSD",
+            "interval": "60",
+            "timezone": "Asia/Shanghai",
+            "theme": "dark",
+            "style": "1",
+            "locale": "zh_CN",
+            "toolbar_bg": "#1e222d",
+            "enable_publishing": false,
+            "hide_side_toolbar": true,
+            "allow_symbol_change": false,
+            "save_image": false,
+            "container_id": "tradingview_index_chart",
+            "studies": [
+                "MASimple@tv-basicstudies"
+            ]
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadIndexChart);
+    } else {
+        loadIndexChart();
+    }
+})();
+</script>

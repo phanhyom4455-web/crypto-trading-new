@@ -1,0 +1,83 @@
+<%- include('../includes/admin-sidebar-new') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-gamepad me-2 text-primary"></i>交易控制</h4>
+        <button class="btn btn-primary" onclick="syncTrades()">
+            <i class="fas fa-sync me-1"></i>同步交易记录
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>交易对</th>
+                            <th>类型</th>
+                            <th>金额</th>
+                            <th>结果</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradeBody">
+                        <% if (controls && controls.length > 0) { %>
+                            <% controls.forEach(c => { %>
+                            <tr>
+                                <td><%= c.id %></td>
+                                <td><%= c.username || c.user_id %></td>
+                                <td><%= c.pair %></td>
+                                <td><%= c.type %></td>
+                                <td>$<%= c.total %></td>
+                                <td>
+                                    <% if (c.result === 'win') { %>
+                                        <span class="badge bg-success">赢</span>
+                                    <% } else if (c.result === 'lose') { %>
+                                        <span class="badge bg-danger">输</span>
+                                    <% } else { %>
+                                        <span class="badge bg-warning">待定</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-success" onclick="setResult(<%= c.id %>, 'win')">设为赢</button>
+                                    <button class="btn btn-sm btn-danger" onclick="setResult(<%= c.id %>, 'lose')">设为输</button>
+                                    <button class="btn btn-sm btn-secondary" onclick="setResult(<%= c.id %>, 'pending')">待定</button>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr><td colspan="7" class="text-center text-muted py-4">暂无交易记录，请点击「同步交易记录」</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setResult(tradeId, result) {
+        fetch('/api/admin/set-trade-result', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tradeId: tradeId, result: result })
+        }).then(r => r.json()).then(data => {
+            alert(data.message);
+            if (data.success) location.reload();
+        }).catch(() => alert('请求失败'));
+    }
+
+    function syncTrades() {
+        fetch('/api/admin/sync-trades', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) location.reload();
+            }).catch(() => alert('请求失败'));
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-ticket-alt me-2 text-primary"></i>工单管理</h4>
+        <div>
+            <button class="btn btn-outline-secondary btn-sm">待处理</button>
+            <button class="btn btn-outline-secondary btn-sm active">全部</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead><tr><th>ID</th><th>用户</th><th>标题</th><th>分类</th><th>优先级</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+                <tbody>
+                    <% tickets.forEach(t => { %>
+                    <tr>
+                        <td>#<%= t.id %></td>
+                        <td><%= t.user %></td>
+                        <td><%= t.title %></td>
+                        <td><%= t.category %></td>
+                        <td><span class="badge bg-<%= t.priority === 'high' ? 'danger' : t.priority === 'medium' ? 'warning' : 'info' %>"><%= t.priority %></span></td>
+                        <td><span class="badge bg-<%= t.status === 'pending' ? 'warning' : t.status === 'processing' ? 'info' : 'success' %>"><%= t.status %></span></td>
+                        <td><%= t.time %></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">回复</button>
+                            <button class="btn btn-sm btn-outline-success">完成</button>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

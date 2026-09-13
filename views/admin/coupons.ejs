@@ -1,0 +1,39 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-ticket-alt me-2 text-primary"></i>优惠券管理</h4>
+        <button class="btn btn-primary"><i class="fas fa-plus me-1"></i>生成优惠券</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>代码</th><th>类型</th><th>价值</th><th>最低消费</th><th>使用率</th><th>到期日</th><th>状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                        <% coupons.forEach(c => { %>
+                        <tr>
+                            <td><code><%= c.code %></code></td>
+                            <td><%= c.type %></td>
+                            <td><%= c.value %></td>
+                            <td>¥<%= c.min_order %></td>
+                            <td><%= Math.round(c.used/c.total*100) %>%</td>
+                            <td><%= c.expiry %></td>
+                            <td><span class="badge bg-<%= c.status === 'active' ? 'success' : 'secondary' %>"><%= c.status %></span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                <button class="btn btn-sm btn-outline-danger">删除</button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

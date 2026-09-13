@@ -1,0 +1,99 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-gamepad me-2 text-primary"></i>交易控制（输赢）</h4>
+        <button class="btn btn-primary" onclick="location.reload()">
+            <i class="fas fa-sync me-1"></i>刷新
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>金额</th>
+                            <th>方向</th>
+                            <th>时间</th>
+                            <th>盈利比例</th>
+                            <th>结果</th>
+                            <th>盈亏</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (orders && orders.length > 0) { %>
+                            <% orders.forEach(o => { %>
+                            <tr>
+                                <td><%= o.id %></td>
+                                <td><%= o.username %></td>
+                                <td>$<%= o.amount %></td>
+                                <td>
+                               <% if (o.direction === 'up') { %>
+                               <span class="badge bg-success">买涨</span>
+                             <% } else if (o.direction === 'down') { %>
+                                <span class="badge bg-danger">买跌</span>
+                            <% } else { %>
+        -
+                              <% } %>
+                    </td>
+                                <td><%= o.duration %>秒</td>
+                                <td><%= (o.profit_rate * 100).toFixed(0) %>%</td>
+                                <td>
+                                    <% if (o.result === 'win') { %>
+                                        <span class="badge bg-success">赢</span>
+                                    <% } else if (o.result === 'lose') { %>
+                                        <span class="badge bg-danger">输</span>
+                                    <% } else if (o.status === 'running') { %>
+                                        <span class="badge bg-warning">进行中</span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary">待定</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (o.status === 'settled') { %>
+                                        <span style="color:<%= o.profit >= 0 ? '#10b981' : '#ef4444' %>;font-weight:700;">
+                                            <%= o.profit >= 0 ? '+' : '' %><%= o.profit.toFixed(2) %>
+                                        </span>
+                                    <% } else { %>
+                                        -
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (o.status !== 'settled') { %>
+                                        <button class="btn btn-sm btn-success" onclick="setResult(<%= o.id %>, 'win')">设为赢</button>
+                                        <button class="btn btn-sm btn-danger" onclick="setResult(<%= o.id %>, 'lose')">设为输</button>
+                                    <% } else { %>
+                                        <span class="text-muted">已结算</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr><td colspan="8" class="text-center text-muted py-4">暂无订单</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setResult(orderId, result) {
+        fetch('/api/admin/trade-game/set-result', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: orderId, result: result })
+        }).then(r => r.json()).then(data => {
+            alert(data.message);
+            if (data.success) location.reload();
+        }).catch(() => alert('请求失败'));
+    }
+</script>
+
+</body>
+</html>

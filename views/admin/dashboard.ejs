@@ -1,0 +1,66 @@
+<%- include('../includes/admin-header') %>
+<style>
+.sidebar {
+    width: 220px;
+    background: #1a1a2e;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 20px 0;
+}
+.sidebar h2 {
+    color: white;
+    padding: 0 20px 20px;
+    font-size: 20px;
+    border-bottom: 1px solid #333;
+}
+.sidebar a {
+    display: block;
+    padding: 12px 20px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+.sidebar a:hover {
+    background: #2d2d44;
+    color: white;
+}
+.sidebar a.active {
+    background: #667eea;
+    color: white;
+}
+.main {
+    margin-left: 220px;
+    padding: 24px;
+}
+.header {
+    background: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 24px;
+}
+</style>
+
+<%- include('../includes/admin-sidebar') %>
+
+<div class="main">
+    <div class="header">
+        <h2>📊 控制台</h2>
+        <p>平台运行概览</p>
+    </div>
+
+    <div class="card">
+        <h3>欢迎回来，admin</h3>
+        <p>今天是 <%= new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) %></p>
+    </div>
+</div>

@@ -1,0 +1,258 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="user-info text-center py-3">
+            <img src="https://ui-avatars.com/api/?name=Admin&size=60&background=667eea&color=fff&bold=true" class="rounded-circle" width="60" height="60">
+            <h6 class="mt-2">admin</h6>
+            <small class="text-muted">超级管理员</small>
+            <a href="/admin/logout" class="btn btn-sm btn-outline-danger mt-2">
+                <i class="fas fa-sign-out-alt"></i> 退出
+            </a>
+        </div>
+    </div>
+    <ul class="nav flex-column">
+        <!-- 📊 核心功能 -->
+        <li class="nav-header">📊 核心功能</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+                <i class="fas fa-chart-pie"></i> 控制台
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+                <i class="fas fa-users"></i> 用户管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/deposits">
+                <i class="fas fa-arrow-down"></i> 充值管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/withdrawals">
+                <i class="fas fa-arrow-up"></i> 取款管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/transactions">
+                <i class="fas fa-exchange-alt"></i> 交易管理
+            </a>
+        </li>
+
+        <!-- 👤 用户管理 -->
+        <li class="nav-header">👤 用户管理</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/user-groups">
+                <i class="fas fa-layer-group"></i> 用户分组
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/vip-levels">
+                <i class="fas fa-crown"></i> 会员等级
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/points">
+                <i class="fas fa-star"></i> 积分管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/reset-password">
+                <i class="fas fa-key"></i> 重置密码
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/user-security">
+                <i class="fas fa-user-shield"></i> 用户安全设置
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/user-verify">
+                <i class="fas fa-user-check"></i> 用户审核
+            </a>
+        </li>
+
+        <!-- 📢 内容管理 -->
+        <li class="nav-header">📢 内容管理</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/announcements">
+                <i class="fas fa-bullhorn"></i> 公告管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/notifications">
+                <i class="fas fa-bell"></i> 通知管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/campaigns">
+                <i class="fas fa-gift"></i> 营销活动
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/coupons">
+                <i class="fas fa-ticket-alt"></i> 优惠券管理
+            </a>
+        </li>
+
+        <!-- 📊 数据统计 -->
+        <li class="nav-header">📊 数据统计</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/finance">
+                <i class="fas fa-coins"></i> 财务统计
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/earnings">
+                <i class="fas fa-chart-bar"></i> 收益统计
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/ranking">
+                <i class="fas fa-trophy"></i> 用户排行
+            </a>
+        </li>
+
+        <!-- 💰 资金管理 -->
+        <li class="nav-header">💰 资金管理</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/payment-channels">
+                <i class="fas fa-credit-card"></i> 支付渠道
+            </a>
+        </li>
+
+        <!-- 🛡️ 安全与风控 -->
+        <li class="nav-header">🛡️ 安全与风控</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/risk-control">
+                <i class="fas fa-shield-alt"></i> 风控管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/login-logs">
+                <i class="fas fa-history"></i> 登录日志
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/backup">
+                <i class="fas fa-database"></i> 数据备份
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/permissions">
+                <i class="fas fa-lock"></i> 权限管理
+            </a>
+        </li>
+
+        <!-- 🎫 客服支持 -->
+        <li class="nav-header">🎫 客服支持</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/tickets">
+                <i class="fas fa-ticket-alt"></i> 工单管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/feedbacks">
+                <i class="fas fa-comment"></i> 用户反馈
+            </a>
+        </li>
+
+        <!-- 🔑 系统管理 -->
+        <li class="nav-header">🔑 系统管理</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/api">
+                <i class="fas fa-code"></i> API管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/monitor">
+                <i class="fas fa-server"></i> 系统监控
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+                <i class="fas fa-cog"></i> 系统设置
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/logs">
+                <i class="fas fa-clipboard-list"></i> 操作日志
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/cron">
+                <i class="fas fa-clock"></i> 定时任务
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/languages">
+                <i class="fas fa-globe"></i> 多语言管理
+            </a>
+        </li>
+
+        <!-- 📱 移动管理 -->
+        <li class="nav-header">📱 移动管理</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/app-manage">
+                <i class="fas fa-mobile-alt"></i> App管理
+            </a>
+        </li>
+
+        <!-- 🎯 交易控制 -->
+        <li class="nav-header">🎯 交易控制</li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/market-control">
+                <i class="fas fa-chart-line"></i> 市场控制
+            </a>
+        </li>
+    </ul>
+</div>
+
+<style>
+.sidebar {
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    min-height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
+    z-index: 1000;
+}
+.sidebar-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 20px 0;
+}
+.sidebar-header img {
+    border: 3px solid rgba(255,255,255,0.3);
+}
+.nav-header {
+    padding: 10px 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 5px;
+}
+.nav-link {
+    padding: 10px 20px;
+    color: #495057;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: block;
+}
+.nav-link:hover {
+    background: #f8f9fa;
+    color: #667eea;
+}
+.nav-link i {
+    width: 20px;
+    margin-right: 10px;
+}
+.nav-item {
+    display: block !important;
+}
+</style>

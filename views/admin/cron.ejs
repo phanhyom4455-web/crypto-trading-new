@@ -1,0 +1,33 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-clock me-2 text-primary"></i>定时任务</h4>
+        <button class="btn btn-primary"><i class="fas fa-plus me-1"></i>新建任务</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead><tr><th>ID</th><th>任务名称</th><th>调度</th><th>状态</th><th>上次运行</th><th>操作</th></tr></thead>
+                <tbody>
+                    <% tasks.forEach(task => { %>
+                    <tr>
+                        <td><%= task.id %></td>
+                        <td><%= task.name %></td>
+                        <td><code><%= task.schedule %></code></td>
+                        <td><span class="badge bg-<%= task.status === 'active' ? 'success' : 'secondary' %>"><%= task.status %></span></td>
+                        <td><%= task.last_run %></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">编辑</button>
+                            <button class="btn btn-sm btn-outline-success">运行</button>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

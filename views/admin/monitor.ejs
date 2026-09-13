@@ -1,0 +1,83 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid main-content">
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4><i class="fas fa-server me-2 text-primary"></i>系统监控</h4>
+        <span class="badge bg-success"><i class="fas fa-circle me-1"></i>系统运行正常</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white p-2">
+                <div class="card-body">
+                    <h6>CPU使用率</h6>
+                    <h2><%= stats.cpu %>%</h2>
+                    <div class="progress">
+                        <div class="progress-bar bg-light" style="width: <%= stats.cpu %>%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-2">
+                <div class="card-body">
+                    <h6>内存使用率</h6>
+                    <h2><%= stats.memory %>%</h2>
+                    <div class="progress">
+                        <div class="progress-bar bg-light" style="width: <%= stats.memory %>%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white p-2">
+                <div class="card-body">
+                    <h6>磁盘使用率</h6>
+                    <h2><%= stats.disk %>%</h2>
+                    <div class="progress">
+                        <div class="progress-bar bg-light" style="width: <%= stats.disk %>%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-2">
+                <div class="card-body">
+                    <h6>运行时间</h6>
+                    <h2><%= stats.uptime %></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">API请求统计</div>
+                <div class="card-body">
+                    <h3 class="text-center"><%= stats.requests %></h3>
+                    <p class="text-center text-muted">今日总请求</p>
+                    <div class="d-flex justify-content-around">
+                        <div><span class="text-success">成功: 98.5%</span></div>
+                        <div><span class="text-danger">错误: <%= stats.errors %></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">响应时间</div>
+                <div class="card-body">
+                    <h3 class="text-center"><%= stats.responseTime %> ms</h3>
+                    <p class="text-center text-muted">平均响应时间</p>
+                    <div class="d-flex justify-content-around">
+                        <div><span class="text-success">最快: 45ms</span></div>
+                        <div><span class="text-danger">最慢: 320ms</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

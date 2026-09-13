@@ -1,0 +1,45 @@
+<!-- ============================================ -->
+<!-- 前台资产动态显示 -->
+<!-- ============================================ -->
+<script>
+(function() {
+    async function loadAssets() {
+        try {
+            var res = await fetch('/api/assets');
+            var data = await res.json();
+
+            if (data.success && data.assets) {
+                var total = 0;
+                var frozen = 0;
+
+                data.assets.forEach(function(asset) {
+                    var balance = parseFloat(asset.balance) || 0;
+                    var frozenAmt = parseFloat(asset.frozen) || 0;
+
+                    if (asset.currency === 'USDT') {
+                 total += balance;
+               } 
+                });
+
+                var totalEl = document.getElementById('totalAssets');
+                var availEl = document.getElementById('availableBalance');
+                var frozenEl = document.getElementById('frozenBalance');
+
+                if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+                if (availEl) availEl.textContent = '$' + (total - frozen).toFixed(2);
+                if (frozenEl) frozenEl.textContent = '$' + frozen.toFixed(2);
+
+                console.log('✅ 资产已更新:', total);
+            }
+        } catch (e) {
+            console.log('加载资产失败', e);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadAssets);
+    } else {
+        loadAssets();
+    }
+})();
+</script>

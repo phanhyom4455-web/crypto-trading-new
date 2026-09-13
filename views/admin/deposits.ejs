@@ -1,0 +1,224 @@
+<%- include('../includes/admin-header') %>
+<div class="container-fluid">
+    <div class="row">
+        <%- include('../includes/admin-sidebar') %>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-arrow-down me-2 text-success"></i>充值管理</h1>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="enableSound()" id="soundBtn">
+                        <i class="fas fa-volume-up"></i> 启用声音
+                    </button>
+                    <span class="badge bg-warning">待处理: <span id="pendingCount">0</span></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户</th>
+                                    <th>金额</th>
+                                    <th>支付方式</th>
+                                    <th>TxID</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="depositList">
+                                <tr><td colspan="8" class="text-center text-muted py-4">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ============================================
+    // 声音系统
+    // ============================================
+    let soundEnabled = false;
+    let audioCtx = null;
+
+    function enableSound() {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            soundEnabled = true;
+            document.getElementById('soundBtn').innerHTML = '<i class="fas fa-volume-up"></i> 声音已启用 ✅';
+            document.getElementById('soundBtn').className = 'btn btn-sm btn-success me-2';
+            playTestSound();
+            alert('🔊 声音已启用！');
+        } catch (e) {
+            alert('❌ 无法启用声音，请检查浏览器设置');
+        }
+    }
+
+    function playTestSound() {
+        playBeep(880, 0.1);
+        setTimeout(() => playBeep(1100, 0.1), 120);
+        setTimeout(() => playBeep(1320, 0.15), 240);
+    }
+
+    function playBeep(frequency, duration, type) {
+        if (!soundEnabled || !audioCtx) return;
+        try {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = frequency;
+            oscillator.type = type || 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        } catch (e) {}
+    }
+
+    function playSuccessSound() {
+        if (!soundEnabled) return;
+        playBeep(880, 0.12);
+        setTimeout(() => playBeep(1100, 0.12), 130);
+        setTimeout(() => playBeep(1320, 0.18), 260);
+    }
+
+    function playFailSound() {
+        if (!soundEnabled) return;
+        playBeep(440, 0.25);
+        setTimeout(() => playBeep(330, 0.35), 280);
+    }
+
+    function playNewOrderSound() {
+        if (!soundEnabled) return;
+        playBeep(660, 0.08);
+        setTimeout(() => playBeep(880, 0.08), 110);
+        setTimeout(() => playBeep(1100, 0.12), 220);
+    }
+
+    // ============================================
+    // 加载充值列表
+    // ============================================
+    let previousPendingCount = 0;
+
+    async function loadDeposits() {
+        try {
+            const response = await fetch('/api/admin/deposits');
+            const data = await response.json();
+            const tbody = document.getElementById('depositList');
+            let pendingCount = 0;
+            
+            if (data.success && data.deposits && data.deposits.length > 0) {
+                let html = '';
+                data.deposits.forEach(d => {
+                    if (d.status === 'pending') pendingCount++;
+                    const statusMap = {
+                        'pending': '<span class="badge bg-warning">待处理</span>',
+                        'completed': '<span class="badge bg-success">已完成</span>',
+                        'failed': '<span class="badge bg-danger">已拒绝</span>'
+                    };
+                    html += `
+                        <tr>
+                            <td>${d.id}</td>
+                            <td><strong>${d.username || '用户'}</strong></td>
+                            <td>¥${parseFloat(d.amount).toFixed(2)}</td>
+                            <td>${d.method || 'USDT'}</td>
+                            <td><code>${d.txid || '-'}</code></td>
+                            <td>${statusMap[d.status] || statusMap.pending}</td>
+                            <td>${new Date(d.created_at).toLocaleString()}</td>
+                            <td>
+                                ${d.status === 'pending' ? `
+                                    <button class="btn btn-sm btn-success" onclick="approveDeposit(${d.id})">
+                                        <i class="fas fa-check"></i> 通过
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="rejectDeposit(${d.id})">
+                                        <i class="fas fa-times"></i> 拒绝
+                                    </button>
+                                ` : '<span class="text-muted">已处理</span>'}
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+                document.getElementById('pendingCount').textContent = pendingCount;
+
+                if (pendingCount > previousPendingCount) {
+                    playNewOrderSound();
+                }
+                previousPendingCount = pendingCount;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">暂无充值记录</td></tr>`;
+                document.getElementById('pendingCount').textContent = 0;
+            }
+        } catch (error) {
+            console.error('加载充值记录失败:', error);
+            document.getElementById('depositList').innerHTML = `
+                <tr><td colspan="8" class="text-center text-danger py-4">加载失败，请刷新重试</td></tr>
+            `;
+        }
+    }
+
+    // ============================================
+    // 通过充值
+    // ============================================
+    async function approveDeposit(id) {
+        if (!confirm('确定要通过这笔充值吗？')) return;
+        try {
+            const response = await fetch('/api/admin/deposit/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            const data = await response.json();
+            if (data.success) {
+                playSuccessSound();
+                alert('✅ ' + data.message);
+                loadDeposits();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        } catch (error) {
+            alert('❌ 操作失败，请重试');
+            console.error(error);
+        }
+    }
+
+    // ============================================
+    // 拒绝充值
+    // ============================================
+    async function rejectDeposit(id) {
+        if (!confirm('确定要拒绝这笔充值吗？')) return;
+        try {
+            const response = await fetch('/api/admin/deposit/reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            const data = await response.json();
+            if (data.success) {
+                playFailSound();
+                alert('✅ ' + data.message);
+                loadDeposits();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        } catch (error) {
+            alert('❌ 操作失败，请重试');
+            console.error(error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDeposits();
+        setInterval(loadDeposits, 5000);
+    });
+</script>
+</body>
+</html>

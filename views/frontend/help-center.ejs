@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮助中心 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .navbar-brand { color: #fff !important; font-weight: 800; font-size: 24px; }
+        .navbar-brand i { margin-right: 10px; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; padding: 8px 18px !important; border-radius: 8px; }
+        .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.15); }
+        .nav-link i { margin-right: 6px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: none; padding: 8px; }
+        .dropdown-item { border-radius: 8px; padding: 10px 20px; }
+        .dropdown-item:hover { background: #f3f4f6; }
+        .dropdown-item i { width: 20px; margin-right: 10px; color: #667eea; }
+        .footer { background: #1a202c; color: rgba(255,255,255,0.7); padding: 40px 0; margin-top: 50px; }
+        .footer a { color: rgba(255,255,255,0.6); text-decoration: none; display: block; padding: 4px 0; }
+        .footer a:hover { color: #fff; }
+        .footer h5 { color: #fff; font-weight: 700; }
+        .help-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 20px; transition: 0.3s; }
+        .help-card:hover { transform: translateY(-4px); box-shadow: 0 10px 40px rgba(102,126,234,0.12); }
+        .help-card .icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; margin-bottom: 15px; }
+        .bg-primary-gradient { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .bg-success-gradient { background: linear-gradient(135deg, #10b981, #059669); }
+        .bg-warning-gradient { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .bg-danger-gradient { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .section-title { text-align: center; margin-bottom: 40px; }
+        .section-title h2 { font-size: 36px; font-weight: 800; }
+        .section-title p { color: #6b7280; }
+        .faq-item { background: #fff; border-radius: 12px; padding: 20px 25px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: 0.3s; }
+        .faq-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .faq-item .question { font-weight: 600; display: flex; justify-content: space-between; }
+        .faq-item .answer { display: none; margin-top: 10px; color: #6b7280; padding-top: 10px; border-top: 1px solid #f3f4f6; }
+        .faq-item.active .answer { display: block; }
+        .faq-item .toggle-icon { transition: 0.3s; }
+        .faq-item.active .toggle-icon { transform: rotate(180deg); }
+        .search-box { max-width: 500px; margin: 0 auto 30px; }
+        .search-box input { border-radius: 50px; padding: 12px 24px; border: 2px solid #e5e7eb; }
+        .search-box input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
+        .search-box .btn { border-radius: 50px; padding: 12px 30px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins"></i>CoinTrade</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market">行情</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/trade">交易</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit">充值</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/withdraw">提现</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/help-center">帮助</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <% if (user) { %>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle d-flex align-items-center gap-2" style="color: #fff; border: none; padding: 4px 12px;" data-bs-toggle="dropdown">
+                                <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                                <span><%= user.username %></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                                <li><a class="dropdown-item" href="/assets"><i class="fas fa-wallet"></i>资产明细</a></li>
+                                <li><a class="dropdown-item" href="/trade-history"><i class="fas fa-history"></i>交易记录</a></li>
+                                <li><a class="dropdown-item" href="/security"><i class="fas fa-shield-alt"></i>安全设置</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/api/logout"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-login" style="color:#fff;border:2px solid rgba(255,255,255,0.4);border-radius:50px;padding:8px 24px;background:transparent;">登录</a>
+                        <a href="/register" class="btn btn-register" style="background:#fff;color:#667eea;border:none;border-radius:50px;padding:8px 24px;font-weight:600;">注册</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="section-title">
+            <h2><i class="fas fa-question-circle text-primary me-2"></i>帮助中心</h2>
+            <p>常见问题解答，快速找到您需要的答案</p>
+        </div>
+
+        <!-- 搜索 -->
+        <div class="search-box">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInput" placeholder="搜索问题..." onkeyup="searchFAQ()">
+                <button class="btn btn-primary" onclick="searchFAQ()"><i class="fas fa-search"></i> 搜索</button>
+            </div>
+        </div>
+
+        <!-- 快速入口 -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="help-card text-center">
+                    <div class="icon bg-primary-gradient mx-auto"><i class="fas fa-user-plus"></i></div>
+                    <h5 class="fw-bold">注册账号</h5>
+                    <p class="text-muted small">如何注册平台账号</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="help-card text-center">
+                    <div class="icon bg-success-gradient mx-auto"><i class="fas fa-arrow-down"></i></div>
+                    <h5 class="fw-bold">充值指南</h5>
+                    <p class="text-muted small">快速充值数字资产</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="help-card text-center">
+                    <div class="icon bg-warning-gradient mx-auto"><i class="fas fa-arrow-up"></i></div>
+                    <h5 class="fw-bold">提现指南</h5>
+                    <p class="text-muted small">安全提现您的资产</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="help-card text-center">
+                    <div class="icon bg-danger-gradient mx-auto"><i class="fas fa-shield-alt"></i></div>
+                    <h5 class="fw-bold">安全设置</h5>
+                    <p class="text-muted small">保障账户安全</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <h4 class="fw-bold mb-4"><i class="fas fa-list text-primary me-2"></i>常见问题</h4>
+        <div id="faqList">
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>如何注册账号？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">点击右上角"注册"按钮，填写用户名、邮箱和密码即可完成注册。注册后请验证邮箱以确保账户安全。</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>如何充值数字资产？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">进入"充值"页面，选择币种获取充值地址，转账后等待1-3个区块确认即可到账。</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>提现需要多长时间？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">提现申请通常会在24小时内处理完成，具体时间取决于区块链网络确认速度。</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>如何保障账户安全？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">建议启用谷歌验证器(2FA)和资金密码双重保护，不要将密码告知他人，定期更换密码。</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>支持哪些数字货币交易？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">支持 BTC、ETH、USDT、ADA、DOT、SOL、AVAX、MATIC、LINK 等多种主流数字货币。</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>如何联系客服？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">您可以通过"联系我们"页面提交工单，或发送邮件至 support@cointrade.com，客服团队7x24小时为您服务。</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>交易手续费是多少？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">标准交易手续费为0.1%，VIP会员可享受更低费率。充值免费，提现手续费根据币种不同有所差异。</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="question">
+                    <span>什么是资金密码？</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="answer">资金密码是用于提现和交易时的二次验证密码，与登录密码不同，建议设置为不同的密码以增强安全。</div>
+            </div>
+        </div>
+
+        <!-- 联系客服 -->
+        <div class="text-center mt-5 p-4 bg-primary text-white rounded-4">
+            <h5><i class="fas fa-headset me-2"></i>仍未找到答案？</h5>
+            <p class="opacity-75">我们的客服团队随时为您服务</p>
+            <a href="/contact" class="btn btn-light btn-lg rounded-pill px-5">
+                <i class="fas fa-envelope me-2"></i>联系客服
+            </a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4"><h5><i class="fas fa-coins me-2"></i>CoinTrade</h5><p>专业的数字货币交易平台</p></div>
+                <div class="col-md-2"><h5>平台</h5><a href="/about">关于我们</a><a href="/terms">服务条款</a></div>
+                <div class="col-md-2"><h5>交易</h5><a href="/market">交易市场</a><a href="/deposit">充值</a></div>
+                <div class="col-md-4"><h5>联系我们</h5><p><i class="fas fa-envelope me-2"></i>support@cointrade.com</p><p><i class="fas fa-phone me-2"></i>+86 400-888-8888</p></div>
+            </div>
+            <div class="text-center mt-4 pt-3 border-top border-secondary"><p class="mb-0">© 2024 CoinTrade. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleFAQ(el) {
+            el.classList.toggle('active');
+        }
+
+        function searchFAQ() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.faq-item');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(keyword) || keyword === '') {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

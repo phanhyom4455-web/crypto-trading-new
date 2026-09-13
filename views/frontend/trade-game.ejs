@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f0f2f5; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 12px 0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .navbar-brand { color: #fff !important; font-weight: 800; font-size: 24px; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; padding: 8px 18px !important; border-radius: 8px; }
+        .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.15); }
+        .game-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); max-width: 600px; margin: 0 auto; }
+        .game-card h3 { font-weight: 700; margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { font-weight: 600; display: block; margin-bottom: 10px; }
+        .form-control { width: 100%; padding: 15px; border: 2px solid #e8ecf1; border-radius: 10px; font-size: 16px; }
+        .form-control:focus { outline: none; border-color: #667eea; }
+
+        .direction-options { display: flex; gap: 10px; }
+        .direction-options button { flex: 1; padding: 20px; border: 2px solid #e8ecf1; background: #fff; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 700; transition: all 0.3s; }
+        .direction-options button.up:hover { border-color: #10b981; background: #d1fae5; }
+        .direction-options button.up.active { background: #10b981; color: #fff; border-color: #10b981; }
+        .direction-options button.down:hover { border-color: #ef4444; background: #fee2e2; }
+        .direction-options button.down.active { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+        .time-options { display: flex; gap: 10px; }
+        .time-options button { flex: 1; padding: 15px; border: 2px solid #e8ecf1; background: #fff; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; }
+        .time-options button:hover { border-color: #667eea; }
+        .time-options button.active { background: #667eea; color: #fff; border-color: #667eea; }
+        .time-options button small { display: block; font-size: 12px; opacity: 0.8; margin-top: 3px; }
+
+        .submit-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .countdown { text-align: center; padding: 30px; background: #f8f9fa; border-radius: 16px; margin-top: 20px; }
+        .countdown .timer { font-size: 64px; font-weight: 800; color: #667eea; }
+        .countdown .label { font-size: 16px; color: #666; margin-top: 10px; }
+        .result-box { text-align: center; padding: 40px; border-radius: 16px; margin-top: 20px; }
+        .result-win { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
+        .result-lose { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; }
+        .result-box .icon { font-size: 64px; margin-bottom: 15px; }
+        .result-box .title { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+        .result-box .amount { font-size: 36px; font-weight: 800; }
+        .result-box .sub { font-size: 14px; opacity: 0.8; margin-top: 10px; }
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; }
+        .message.success { background: #d1fae5; color: #059669; }
+        .message.error { background: #fee2e2; color: #dc2626; }
+        .balance-info { background: #f0f4ff; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .balance-info .amount { font-size: 24px; font-weight: 800; color: #667eea; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins"></i>CoinTrade</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market">行情</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/trade-game">猜涨跌</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit">充值</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/withdraw">提现</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="game-card">
+            <h3>🎯 猜涨跌</h3>
+
+            <div class="balance-info">
+                <div>可用余额</div>
+                <div class="amount" id="balance">$0.00</div>
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <div id="orderForm">
+                <div class="form-group">
+                    <label>投资金额 (USDT)</label>
+                    <input type="number" class="form-control" id="amount" placeholder="请输入金额" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label>选择方向</label>
+                    <div class="direction-options">
+                        <button type="button" class="up" onclick="selectDirection('up', this)">
+                            📈 买涨
+                        </button>
+                        <button type="button" class="down" onclick="selectDirection('down', this)">
+                            📉 买跌
+                        </button>
+                    </div>
+                    <input type="hidden" id="direction" value="">
+                </div>
+
+                <div class="form-group">
+                    <label>选择时间</label>
+                    <div class="time-options">
+                        <button type="button" onclick="selectTime(30, this)">
+                            30秒
+                            <small>盈利 30%</small>
+                        </button>
+                        <button type="button" onclick="selectTime(60, this)">
+                            60秒
+                            <small>盈利 45%</small>
+                        </button>
+                        <button type="button" onclick="selectTime(120, this)">
+                            120秒
+                            <small>盈利 50%</small>
+                        </button>
+                    </div>
+                    <input type="hidden" id="duration" value="30">
+                </div>
+
+                <div class="form-group">
+                    <label>预期收益</label>
+                    <div id="profitPreview" style="font-size: 20px; font-weight: 700; color: #10b981;">+0.00 USDT</div>
+                </div>
+
+                <button class="submit-btn" onclick="submitOrder()">
+                    <i class="fas fa-rocket me-2"></i>开始
+                </button>
+            </div>
+
+            <div class="countdown" id="countdownBox" style="display: none;">
+                <div class="timer" id="timer">30</div>
+                <div class="label" id="countdownLabel">请等待结果...</div>
+            </div>
+
+            <div class="result-box" id="resultBox" style="display: none;">
+                <div class="icon" id="resultIcon"></div>
+                <div class="title" id="resultTitle"></div>
+                <div class="amount" id="resultAmount"></div>
+                <div class="sub" id="resultSub"></div>
+                <button class="submit-btn" style="margin-top: 20px;" onclick="resetGame()">
+                    <i class="fas fa-redo me-2"></i>再来一局
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var selectedDuration = 30;
+        var selectedRate = 0.30;
+        var selectedDirection = '';
+        var currentOrderId = null;
+        var timerInterval = null;
+        var pollInterval = null;
+
+        async function loadBalance() {
+            try {
+                var res = await fetch('/api/assets');
+                var data = await res.json();
+                if (data.success && data.assets) {
+                    var usdt = data.assets.find(function(a) { return a.currency === 'USDT'; });
+                    if (usdt) {
+                        document.getElementById('balance').textContent = '$' + parseFloat(usdt.balance).toFixed(2);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function selectDirection(dir, btn) {
+            selectedDirection = dir;
+            document.getElementById('direction').value = dir;
+
+            document.querySelectorAll('.direction-options button').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+
+        function selectTime(duration, btn) {
+            selectedDuration = duration;
+            var rates = { 30: 0.30, 60: 0.45, 120: 0.50 };
+            selectedRate = rates[duration];
+            document.getElementById('duration').value = duration;
+
+            document.querySelectorAll('.time-options button').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            updateProfitPreview();
+        }
+
+        function updateProfitPreview() {
+            var amount = parseFloat(document.getElementById('amount').value) || 0;
+            var profit = amount * selectedRate;
+            document.getElementById('profitPreview').textContent = '+' + profit.toFixed(2) + ' USDT';
+        }
+
+        document.getElementById('amount').addEventListener('input', updateProfitPreview);
+
+        async function submitOrder() {
+            var amount = parseFloat(document.getElementById('amount').value) || 0;
+            var msg = document.getElementById('message');
+
+            if (amount <= 0) {
+                msg.className = 'message error';
+                msg.textContent = '❌ 请输入有效金额';
+                msg.style.display = 'block';
+                return;
+            }
+            if (!selectedDirection) {
+                msg.className = 'message error';
+                msg.textContent = '❌ 请选择买涨或买跌';
+                msg.style.display = 'block';
+                return;
+            }
+
+            try {
+                var res = await fetch('/api/trade-game/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: amount,
+                        duration: selectedDuration,
+                        direction: selectedDirection
+                    })
+                });
+                var data = await res.json();
+
+                if (data.success) {
+                    currentOrderId = data.order.id;
+                    document.getElementById('orderForm').style.display = 'none';
+                    document.getElementById('countdownBox').style.display = 'block';
+                    document.getElementById('countdownLabel').textContent = '你选择了 ' + (selectedDirection === 'up' ? '买涨' : '买跌') + '，请等待结果...';
+                    startCountdown(selectedDuration);
+                    pollResult();
+                } else {
+                    msg.className = 'message error';
+                    msg.textContent = '❌ ' + data.message;
+                    msg.style.display = 'block';
+                }
+            } catch (e) {
+                msg.className = 'message error';
+                msg.textContent = '❌ 网络错误';
+                msg.style.display = 'block';
+            }
+        }
+
+        function startCountdown(seconds) {
+            var remaining = seconds;
+            document.getElementById('timer').textContent = remaining;
+            timerInterval = setInterval(function() {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').textContent = '0';
+                } else {
+                    document.getElementById('timer').textContent = remaining;
+                }
+            }, 1000);
+        }
+
+        function pollResult() {
+            pollInterval = setInterval(async function() {
+                try {
+                    var res = await fetch('/api/trade-game/result/' + currentOrderId);
+                    var data = await res.json();
+
+                    if (data.success && data.order.status === 'settled') {
+                        clearInterval(pollInterval);
+                        clearInterval(timerInterval);
+                        showResult(data.order);
+                    }
+                } catch (e) {}
+            }, 1000);
+        }
+
+        function showResult(order) {
+            document.getElementById('countdownBox').style.display = 'none';
+            var box = document.getElementById('resultBox');
+            box.style.display = 'block';
+
+            if (order.result === 'win') {
+                box.className = 'result-box result-win';
+                document.getElementById('resultIcon').textContent = '🎉';
+                document.getElementById('resultTitle').textContent = '恭喜你赢了！';
+                document.getElementById('resultAmount').textContent = '+' + order.profit.toFixed(2) + ' USDT';
+                document.getElementById('resultSub').textContent = '本金 ' + order.amount + ' + 盈利 ' + order.profit.toFixed(2);
+            } else {
+                box.className = 'result-box result-lose';
+                document.getElementById('resultIcon').textContent = '😢';
+                document.getElementById('resultTitle').textContent = '很遗憾，你输了';
+                document.getElementById('resultAmount').textContent = '-' + order.amount.toFixed(2) + ' USDT';
+                document.getElementById('resultSub').textContent = '本金已扣除';
+            }
+
+            loadBalance();
+        }
+
+        function resetGame() {
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('orderForm').style.display = 'block';
+            document.getElementById('amount').value = '';
+            document.getElementById('profitPreview').textContent = '+0.00 USDT';
+            document.getElementById('direction').value = '';
+            selectedDirection = '';
+            document.querySelectorAll('.direction-options button').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            currentOrderId = null;
+        }
+
+        loadBalance();
+        document.querySelector('.time-options button').classList.add('active');
+    </script>
+</body>
+</html>

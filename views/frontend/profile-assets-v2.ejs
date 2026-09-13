@@ -1,0 +1,51 @@
+<!-- ============================================ -->
+<!-- 个人中心资产显示（真实价格） -->
+<!-- ============================================ -->
+<script>
+(function() {
+    async function loadAssetsV2() {
+        try {
+            // 先获取价格
+            var priceRes = await fetch('/api/coin-prices');
+            var priceData = await priceRes.json();
+            var prices = priceData.prices || {};
+
+            // 再获取资产
+            var assetRes = await fetch('/api/assets');
+            var assetData = await assetRes.json();
+
+            if (assetData.success && assetData.assets) {
+                var totalUSDT = 0;
+                var frozenUSDT = 0;
+
+                assetData.assets.forEach(function(asset) {
+    var balance = parseFloat(asset.balance) || 0;
+    var frozen = parseFloat(asset.frozen) || 0;
+    var price = prices[asset.currency] || 0;
+
+    totalUSDT += balance * price;
+    frozenUSDT += frozen * price;
+});
+
+                var totalEl = document.getElementById('totalAssets');
+                var availEl = document.getElementById('availableBalance');
+                var frozenEl = document.getElementById('frozenBalance');
+
+                if (totalEl) totalEl.textContent = '$' + totalUSDT.toFixed(2);
+                if (availEl) availEl.textContent = '$' + (totalUSDT - frozenUSDT).toFixed(2);
+                if (frozenEl) frozenEl.textContent = '$' + frozenUSDT.toFixed(2);
+
+                console.log('✅ 个人中心资产已更新:', totalUSDT);
+            }
+        } catch (e) {
+            console.log('加载资产失败', e);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadAssetsV2);
+    } else {
+        loadAssetsV2();
+    }
+})();
+</script>

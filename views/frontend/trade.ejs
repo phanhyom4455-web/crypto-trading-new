@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交易 - 数字货币交易平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; background: #f0f2f5; }
+        .navbar { background: linear-gradient(135deg, #667eea, #764ba2); padding: 12px 0; box-shadow: 0 4px 20px rgba(102,126,234,0.3); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .navbar-brand { color: #fff !important; font-weight: 800; font-size: 24px; }
+        .navbar-brand i { margin-right: 10px; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; padding: 8px 18px !important; border-radius: 8px; transition: all 0.3s; }
+        .nav-link:hover, .nav-link.active { color: #fff !important; background: rgba(255,255,255,0.15); }
+        .nav-link i { margin-right: 6px; }
+        .btn-login { color: #fff !important; border: 2px solid rgba(255,255,255,0.4); border-radius: 50px; padding: 8px 24px; background: transparent; }
+        .btn-login:hover { background: rgba(255,255,255,0.15); }
+        .btn-register { background: #fff; color: #667eea !important; border: none; border-radius: 50px; padding: 8px 24px; font-weight: 600; }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: none; padding: 8px; }
+        .dropdown-item { border-radius: 8px; padding: 10px 20px; }
+        .dropdown-item:hover { background: #f3f4f6; }
+        .dropdown-item i { width: 20px; margin-right: 10px; color: #667eea; }
+        .footer { background: #1a202c; color: rgba(255,255,255,0.7); padding: 40px 0; margin-top: 50px; }
+        .footer a { color: rgba(255,255,255,0.6); text-decoration: none; display: block; padding: 4px 0; }
+        .footer a:hover { color: #fff; }
+        .footer h5 { color: #fff; font-weight: 700; }
+        .trade-card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: none; }
+        .trade-card h6 { font-weight: 700; margin-bottom: 15px; }
+        .form-control { border-radius: 10px; padding: 12px 16px; border: 2px solid #e5e7eb; }
+        .form-control:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
+        .btn-buy { background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 10px; padding: 12px; font-weight: 600; color: #fff; width: 100%; }
+        .btn-buy:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.4); }
+        .btn-sell { background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 10px; padding: 12px; font-weight: 600; color: #fff; width: 100%; }
+        .btn-sell:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(239,68,68,0.4); }
+        .btn-buy:disabled, .btn-sell:disabled { opacity: 0.6; cursor: not-allowed; }
+        .price-display { font-size: 28px; font-weight: 800; }
+        .price-change.up { color: #10b981; }
+        .price-change.down { color: #ef4444; }
+        .order-book { max-height: 300px; overflow-y: auto; }
+        .order-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+        .order-row .bid { color: #10b981; }
+        .order-row .ask { color: #ef4444; }
+        .chart-container { height: 350px; }
+        .pair-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .pair-selector .btn-pair { border-radius: 50px; padding: 6px 18px; font-size: 13px; border: 2px solid #e5e7eb; background: transparent; transition: 0.3s; }
+        .pair-selector .btn-pair:hover, .pair-selector .btn-pair.active { border-color: #667eea; background: #667eea; color: #fff; }
+        .spinner { display: none; }
+        .btn-buy.loading .spinner, .btn-sell.loading .spinner { display: inline-block; }
+        .btn-buy.loading .btn-text, .btn-sell.loading .btn-text { display: none; }
+        .alert { border-radius: 10px; padding: 12px 16px; }
+        .alert-success { background: #d1fae5; color: #065f46; border: none; }
+        .alert-danger { background: #fee2e2; color: #991b1b; border: none; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-coins"></i>CoinTrade</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/market">行情</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/trade"><i class="fas fa-exchange-alt"></i>交易</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/deposit">充值</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/withdraw">提现</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/help">帮助</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">关于</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <% if (user) { %>
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle d-flex align-items-center gap-2" style="color: #fff; border: none; padding: 4px 12px;" data-bs-toggle="dropdown">
+                                <div class="user-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+                                <span><%= user.username %></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user"></i>个人中心</a></li>
+                                <li><a class="dropdown-item" href="/deposit"><i class="fas fa-arrow-down"></i>充值</a></li>
+                                <li><a class="dropdown-item" href="/withdraw"><i class="fas fa-arrow-up"></i>提现</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/api/logout"><i class="fas fa-sign-out-alt"></i>退出登录</a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-login"><i class="fas fa-sign-in-alt"></i>登录</a>
+                        <a href="/register" class="btn btn-register"><i class="fas fa-user-plus"></i>注册</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div id="message" style="display: none;" class="alert mb-3"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="trade-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-0" id="pairName">BTC/USDT</h6>
+                            <div>
+                                <span class="price-display" id="currentPrice">$62,450.00</span>
+                                <span class="price-change up" id="priceChange">+2.35%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changePeriod('1H')">1H</button>
+                            <button class="btn btn-sm btn-outline-secondary active" onclick="changePeriod('1D')">1D</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changePeriod('1W')">1W</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changePeriod('1M')">1M</button>
+                        </div>
+                    </div>
+                   <%- include('trade-chart') %>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="trade-card">
+                    <h6><i class="fas fa-exchange-alt text-primary me-2"></i>下单交易</h6>
+
+                    <div class="pair-selector">
+                        <button class="btn-pair active" onclick="selectPair('BTC/USDT', this)">BTC/USDT</button>
+                        <button class="btn-pair" onclick="selectPair('ETH/USDT', this)">ETH/USDT</button>
+                        <button class="btn-pair" onclick="selectPair('ADA/USDT', this)">ADA/USDT</button>
+                        <button class="btn-pair" onclick="selectPair('DOT/USDT', this)">DOT/USDT</button>
+                    </div>
+
+                    <form id="tradeForm" onsubmit="submitTrade(event)">
+                        <div class="mb-3">
+                            <label class="fw-bold">交易类型</label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-buy" id="buyBtn" onclick="setType('buy')" style="flex:1;">买入</button>
+                                <button type="button" class="btn btn-sell" id="sellBtn" onclick="setType('sell')" style="flex:1; opacity:0.6;">卖出</button>
+                            </div>
+                            <input type="hidden" id="tradeType" value="buy">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold">价格 (USDT)</label>
+                            <input type="text" class="form-control" id="tradePrice" value="62450.00">
+                        </div>
+                        <div class="mb-3">
+    <label class="fw-bold">下注金额 (USDT)</label>
+    <input type="number" class="form-control" id="tradeAmount" placeholder="请输入金额" step="1" min="1" required>
+</div>
+                        <div class="mb-3">
+                            <label class="fw-bold">总金额 (USDT)</label>
+                            <input type="text" class="form-control" id="tradeTotal" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold">选择时间</label>
+                            <div style="display:flex;gap:8px;">
+                                <button type="button" class="time-btn" onclick="selectTimeBtn(30, this)" style="flex:1;padding:10px;border:2px solid #667eea;background:#667eea;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">
+                                    30秒<small style="display:block;font-size:11px;opacity:0.8;">盈利30%</small>
+                                </button>
+                                <button type="button" class="time-btn" onclick="selectTimeBtn(60, this)" style="flex:1;padding:10px;border:2px solid #e8ecf1;background:#fff;color:#333;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">
+                                    60秒<small style="display:block;font-size:11px;opacity:0.8;">盈利45%</small>
+                                </button>
+                                <button type="button" class="time-btn" onclick="selectTimeBtn(120, this)" style="flex:1;padding:10px;border:2px solid #e8ecf1;background:#fff;color:#333;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">
+                                    120秒<small style="display:block;font-size:11px;opacity:0.8;">盈利50%</small>
+                                </button>
+                            </div>
+                            <input type="hidden" id="tradeDuration" value="30">
+                        </div>
+                        <button type="submit" class="btn-buy" id="submitBtn" style="width:100%;">
+                            <span class="spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                            <span class="btn-text">买入 BTC/USDT</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <div class="trade-card">
+                    <h6><i class="fas fa-list text-success me-2"></i>买单</h6>
+                    <div class="order-book">
+                        <div class="order-row"><span class="bid">$62,400</span><span>0.5234 BTC</span><span>$32,654</span></div>
+                        <div class="order-row"><span class="bid">$62,350</span><span>0.8912 BTC</span><span>$55,567</span></div>
+                        <div class="order-row"><span class="bid">$62,300</span><span>1.2345 BTC</span><span>$76,789</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="trade-card">
+                    <h6><i class="fas fa-list text-danger me-2"></i>卖单</h6>
+                    <div class="order-book">
+                        <div class="order-row"><span class="ask">$62,500</span><span>0.3456 BTC</span><span>$21,600</span></div>
+                        <div class="order-row"><span class="ask">$62,550</span><span>0.7890 BTC</span><span>$49,333</span></div>
+                        <div class="order-row"><span class="ask">$62,600</span><span>1.1234 BTC</span><span>$70,987</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center"><p class="mb-0">© 2024 CoinTrade. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var currentPair = 'BTC/USDT';
+        var currentType = 'buy';
+        var myChart = null;
+
+  
+        function setType(type) {
+            currentType = type;
+            document.getElementById('tradeType').value = type;
+            var buyBtn = document.getElementById('buyBtn');
+            var sellBtn = document.getElementById('sellBtn');
+            var submitBtn = document.getElementById('submitBtn');
+            if (type === 'buy') {
+                buyBtn.style.opacity = '1';
+                sellBtn.style.opacity = '0.6';
+                submitBtn.className = 'btn-buy';
+                submitBtn.innerHTML = '<span class="spinner"><i class="fas fa-spinner fa-spin"></i></span><span class="btn-text">买入 ' + currentPair + '</span>';
+            } else {
+                buyBtn.style.opacity = '0.6';
+                sellBtn.style.opacity = '1';
+                submitBtn.className = 'btn-sell';
+                submitBtn.innerHTML = '<span class="spinner"><i class="fas fa-spinner fa-spin"></i></span><span class="btn-text">卖出 ' + currentPair + '</span>';
+            }
+        }
+
+        function selectPair(pair, btn) {
+            currentPair = pair;
+            document.getElementById('pairName').textContent = pair;
+            document.querySelectorAll('.pair-selector .btn-pair').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            var submitBtn = document.getElementById('submitBtn');
+            var type = document.getElementById('tradeType').value;
+            submitBtn.innerHTML = '<span class="spinner"><i class="fas fa-spinner fa-spin"></i></span><span class="btn-text">' + (type === 'buy' ? '买入 ' : '卖出 ') + pair + '</span>';
+            var prices = { 'BTC/USDT': '62450.00', 'ETH/USDT': '2450.75', 'ADA/USDT': '0.4520', 'DOT/USDT': '6.2500' };
+            document.getElementById('tradePrice').value = prices[pair] || '62450.00';
+            document.getElementById('currentPrice').textContent = '$' + (prices[pair] || '62450.00');
+          // 更新 TradingView 图表
+    if (window.updateTVChart) {
+        window.updateTVChart(pair);
+    }  }
+
+        document.getElementById('tradeAmount').addEventListener('input', function() {
+    document.getElementById('tradeTotal').value = parseFloat(this.value).toFixed(2) || '0.00';
+});
+        document.getElementById('tradePrice').addEventListener('input', function() {
+            var price = parseFloat(this.value) || 0;
+            var amount = parseFloat(document.getElementById('tradeAmount').value) || 0;
+            document.getElementById('tradeTotal').value = (price * amount).toFixed(2);
+        });
+
+        function showMessage(message, type) {
+            var msgDiv = document.getElementById('message');
+            msgDiv.style.display = 'block';
+            msgDiv.textContent = message;
+            msgDiv.className = 'alert mb-3 ' + (type === 'success' ? 'alert-success' : 'alert-danger');
+            setTimeout(function() { msgDiv.style.display = 'none'; }, 5000);
+        }
+
+        function selectTimeBtn(duration, btn) {
+            document.getElementById('tradeDuration').value = duration;
+            document.querySelectorAll('.time-btn').forEach(function(b) {
+                b.style.background = '#fff';
+                b.style.color = '#333';
+                b.style.borderColor = '#e8ecf1';
+            });
+            btn.style.background = '#667eea';
+            btn.style.color = '#fff';
+            btn.style.borderColor = '#667eea';
+        }
+
+        async function submitTrade(event) {
+            event.preventDefault();
+
+            <% if (!user) { %>
+                if (confirm('请先登录才能交易！\n是否前往登录？')) {
+                    window.location.href = '/login';
+                }
+                return;
+            <% } %>
+
+            var price = document.getElementById('tradePrice').value;
+            var amount = document.getElementById('tradeAmount').value;
+            var type = document.getElementById('tradeType').value;
+            var pair = currentPair;
+            var btn = document.getElementById('submitBtn');
+
+            if (!amount || amount <= 0) {
+                showMessage('请输入有效的数量', 'error');
+                return;
+            }
+            if (parseFloat(amount) < 0.001) {
+                showMessage('最小交易数量为 0.001', 'error');
+                return;
+            }
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+            document.getElementById('message').style.display = 'none';
+
+            try {
+               var response = await fetch('/api/trade-countdown/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: parseFloat(amount).toFixed(2),
+                        duration: document.getElementById('tradeDuration').value,
+                        direction: type === 'buy' ? 'up' : 'down'
+                    })
+                });
+
+                var data = await response.json();
+
+                if (data.success) {
+                    var msg = type === 'buy' ? '买入' : '卖出';
+                    // 启动倒计时
+                    if (data.order) {
+    window.startCountdown({
+        id: data.order.id,
+        duration: data.order.duration,
+        direction: data.order.direction,
+        amount: data.order.amount
+    });
+}
+                    
+                    showMessage('✅ ' + msg + ' ' + pair + ' 成功！金额: $' + (parseFloat(price) * parseFloat(amount)).toFixed(2), 'success');
+                    document.getElementById('tradeAmount').value = '';
+                    document.getElementById('tradeTotal').value = '';
+                } else {
+                    showMessage('❌ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ 网络错误，请重试', 'error');
+                console.error('交易错误:', error);
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // initChart();  // 已由 trade-chart 接管
+        });
+    </script>
+<%- include('trade-countdown') %>
+<%- include('../includes/bottom-nav') %>
+
+</body>
+</html>

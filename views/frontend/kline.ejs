@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chart-header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .chart-header h1 {
+            font-size: 24px;
+            color: #1a1a2e;
+        }
+        .chart-header .symbol-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .chart-header .symbol-selector button {
+            padding: 8px 20px;
+            border: 2px solid #e8ecf1;
+            border-radius: 20px;
+            background: white;
+            color: #4a4a6a;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .chart-header .symbol-selector button:hover,
+        .chart-header .symbol-selector button.active {
+            border-color: #2962ff;
+            color: #2962ff;
+            background: #f0f4ff;
+        }
+        .chart-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 15px;
+            height: 600px;
+        }
+        .chart-wrapper .tradingview-widget-container {
+            height: 100% !important;
+            width: 100% !important;
+        }
+        #tradingview_chart {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* 底部中间链接 */
+        .footer-links {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid #e8ecf1;
+        }
+        .footer-btn {
+            display: inline-block;
+            padding: 10px 30px;
+            color: #4a4a6a;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        .footer-btn:hover {
+            color: #2962ff;
+            background: #f0f4ff;
+        }
+        .footer-divider {
+            color: #d0d5dd;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #2962ff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .chart-header {
+                padding: 15px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .chart-header h1 {
+                font-size: 20px;
+            }
+            .chart-header .symbol-selector button {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+            .chart-wrapper {
+                height: 400px;
+                padding: 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            .chart-wrapper {
+                height: 350px;
+            }
+            .chart-header .symbol-selector {
+                gap: 6px;
+            }
+            .chart-header .symbol-selector button {
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-header">
+            <h1>📊 实时K线图</h1>
+            <div class="symbol-selector">
+                <button class="active" data-symbol="BITSTAMP:BTCUSD">BTC/USD</button>
+                <button data-symbol="BITSTAMP:ETHUSD">ETH/USD</button>
+                <button data-symbol="BINANCE:SOLUSDT">SOL/USDT</button>
+                <button data-symbol="NASDAQ:AAPL">AAPL</button>
+                <button data-symbol="SSE:000001">上证指数</button>
+            </div>
+        </div>
+
+        <div class="chart-wrapper">
+            <div class="tradingview-widget-container">
+                <div id="tradingview_chart"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                <script type="text/javascript">
+                    let currentSymbol = 'BITSTAMP:BTCUSD';
+
+                    function loadChart(symbol) {
+                        currentSymbol = symbol;
+                        const container = document.getElementById('tradingview_chart');
+                        container.innerHTML = '';
+
+                        new TradingView.widget({
+                            "width": "100%",
+                            "height": "100%",
+                            "symbol": symbol,
+                            "interval": "D",
+                            "timezone": "Asia/Shanghai",
+                            "theme": "light",
+                            "style": "1",
+                            "locale": "zh_CN",
+                            "toolbar_bg": "#f1f3f6",
+                            "enable_publishing": false,
+                            "hide_side_toolbar": false,
+                            "allow_symbol_change": true,
+                            "save_image": false,
+                            "container_id": "tradingview_chart",
+                            "studies": [
+                                "MASimple@tv-basicstudies",
+                                "RSI@tv-basicstudies"
+                            ]
+                        });
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function() {
+                        loadChart(currentSymbol);
+
+                        document.querySelectorAll('.symbol-selector button').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                document.querySelectorAll('.symbol-selector button').forEach(b => b.classList.remove('active'));
+                                this.classList.add('active');
+                                loadChart(this.dataset.symbol);
+                            });
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+
+        <!-- 底部中间区域 -->
+        <div class="footer-links">
+            <a href="/partners" class="footer-btn">合作伙伴</a>
+            <span class="footer-divider">|</span>
+            <a href="/faq" class="footer-btn">常见问题</a>
+        </div>
+
+        <a href="/" class="back-link">← 返回首页</a>
+    </div>
+</body>
+</html>
