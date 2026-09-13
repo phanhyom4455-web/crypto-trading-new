@@ -1570,6 +1570,37 @@ routesPrice(app);
 routesExchange(app);
 const routesUsersBalance = require('./routes-users-balance');
 routesUsersBalance(app);
+// ============================================
+// 同步所有 Sequelize 模型（自动建表）
+// ============================================
+sequelize.sync({ alter: false })
+  .then(() => console.log('✅ 所有模型表已同步'))
+  .catch(err => console.error('❌ 同步模型表失败：', err.message));
+
+// ============================================
+// ============================================
+// 确保默认管理员存在
+// ============================================
+(async () => {
+  try {
+    const admin = await User.findOne({ where: { username: 'admin' } });
+    if (!admin) {
+      const hashedPwd = await bcrypt.hash('password', 10);
+      await User.create({
+        username: 'admin',
+        email: 'admin@example.com',
+        password: hashedPwd,
+        status: 'active'
+      });
+      console.log('✅ 默认管理员已创建：admin / password');
+    } else {
+      console.log('✅ 管理员账号已存在');
+    }
+  } catch (e) {
+    console.error('❌ 创建管理员失败：', e.message);
+  }
+})();
+
 // 自动建表
 sequelize.query(`
     CREATE TABLE IF NOT EXISTS trade_orders_2 (
