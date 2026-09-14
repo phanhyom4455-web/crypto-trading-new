@@ -342,6 +342,13 @@ app.get('/register', (req, res) => {
         user: null
     });
 });
+app.get('/register-success', (req, res) => {
+    res.render('frontend/register-success', {
+        title: '注册成功',
+        currentPage: 'register-success',
+        user: null
+    });
+});
 // ============================================
 // 客服支持页面
 // ============================================
