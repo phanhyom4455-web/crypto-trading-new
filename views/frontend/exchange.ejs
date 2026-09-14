@@ -390,10 +390,11 @@ function calculateExchange() {
     }
 
     if (sell === buy) {
-        resultBox.className = 'result-box error';
-        resultBox.innerHTML = '❌ 卖出和买入不能相同';
-        return;
-    }
+    resultBox.className = 'result-box error';
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '❌ 卖出和买入不能相同';
+    return;
+}
 
     const sellPrice = currentPrices[sell] || 0;
     const buyPrice = currentPrices[buy] || 0;
@@ -406,13 +407,16 @@ function calculateExchange() {
     const balance = userAssets[sell] || 0;
     if (balance < amount) {
         resultBox.className = 'result-box error';
+        resultBox.style.display = 'block';
         resultBox.innerHTML = '❌ 余额不足（可用：' + balance.toFixed(8) + ' ' + sell + '）';
         return;
     }
 
     resultBox.className = 'result-box success';
-    resultBox.innerHTML =
-        '✅ 可兑换：<strong>' + finalAmount.toFixed(8) + ' ' + buy + '</strong>' +
+resultBox.style.display = 'block';
+resultBox.innerHTML =
+    '✅ 可兑换：<strong>' + finalAmount.toFixed(8) + ' ' + buy + '</strong>' +
+    
         '<br><small>汇率: 1 ' + sell + ' = ' + rate.toFixed(8) + ' ' + buy +
         ' · 手续费: ' + fee.toFixed(8) + ' ' + buy + '</small>';
 }
@@ -439,7 +443,7 @@ async function confirmExchange() {
     const resultBox = document.getElementById('resultBox');
 
     btn.disabled = true;
-    btn.innerHTML = '⏳ 兑换中...';
+    btn.innerHTML = '⏳ 兑换中';
 
     try {
         const res = await fetch('/api/exchange', {
@@ -449,10 +453,12 @@ async function confirmExchange() {
         });
         const data = await res.json();
 
-        if (data.success) {
-            resultBox.className = 'result-box success';
-            resultBox.innerHTML =
-                '✅ 兑换成功！<br>' +
+       if (data.success) {
+    resultBox.className = 'result-box success';
+    resultBox.style.display = 'block';
+    resultBox.innerHTML =
+        '✅ 兑换成功！<br>' +
+        
                 amount + ' ' + sell + ' → <strong>' + data.toAmount.toFixed(8) + ' ' + buy + '</strong>';
 
             document.getElementById('exchangeAmount').value = '';
