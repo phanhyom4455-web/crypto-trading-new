@@ -218,10 +218,13 @@
         </div>
 
         <!-- 兑换数量 -->
-        <div class="exchange-form-group">
-            <label>兑换数量</label>
-            <input type="number" id="exchangeAmount" placeholder="请输入数量" min="0" step="any" oninput="calculateExchange()">
-        </div>
+            <div class="exchange-form-group">
+        <label style="display:flex; justify-content:space-between; align-items:center;">
+        <span>兑换数量</span>
+        <span id="maxAmountBtn" onclick="fillMaxAmount()" style="color:#667eea; font-size:13px; cursor:pointer; font-weight:600;">全部</span>
+    </label>
+    <input type="number" id="exchangeAmount" placeholder="请输入数量" min="0" step="any" oninput="calculateExchange()">
+</div>
 
         <!-- 兑换结果预览 -->
         <div class="result-box" id="resultBox"></div>
@@ -240,7 +243,24 @@
 let currencies = [];       // 币种列表
 let currentPrices = {};    // 实时价格
 let userAssets = {};       // 用户资产
+// ============================================
+// 一键填入全部余额
+// ============================================
+function fillMaxAmount() {
+    const sellCur = document.getElementById('sellCurrency').value;
+    const balance = userAssets[sellCur] || 0;
 
+    if (balance <= 0) {
+        alert('该币种余额为 0');
+        return;
+    }
+
+    // 减去 0.1% 手续费，避免正好等于余额导致兑换失败
+    const maxAmount = balance * 0.999;
+    document.getElementById('exchangeAmount').value = maxAmount.toFixed(8);
+
+    calculateExchange();
+}
 // ============================================
 // 加载币种列表
 // ============================================
