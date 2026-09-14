@@ -249,9 +249,12 @@ let userAssets = {};       // 用户资产
 function fillMaxAmount() {
     const sellCur = document.getElementById('sellCurrency').value;
     const balance = userAssets[sellCur] || 0;
+    const resultBox = document.getElementById('resultBox');
 
     if (balance <= 0) {
-        alert('该币种余额为 0');
+        resultBox.className = 'result-box error';
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = '❌ 余额不足（可用：' + balance.toFixed(8) + ' ' + sellCur + '）';
         return;
     }
 
