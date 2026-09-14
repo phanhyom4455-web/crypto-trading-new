@@ -278,33 +278,12 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    tempUserData = {
-                        username: username,
-                        email: registerData.email,
-                        phone: registerData.phone,
-                        password: password
-                    };
-                    
-                    document.getElementById('registerForm').style.display = 'none';
-                    document.getElementById('verifyForm').style.display = 'block';
-                    
-                    if (currentTab === 'email') {
-                        document.getElementById('verifyTip').textContent = '验证码已发送到您的邮箱 ' + email;
-                    } else {
-                        document.getElementById('verifyTip').textContent = '验证码已发送到您的手机 ' + phone;
-                    }
-                    
-                    if (data.devCodes) {
-                        if (currentTab === 'email') {
-                            alert('邮箱验证码：' + data.devCodes.email);
-                        } else {
-                            alert('手机验证码：' + data.devCodes.phone);
-                        }
-                    }
-                } else {
-                    showMessage('error', data.message || '注册失败');
-                }
+               if (data.success) {
+    // 注册成功 → 跳转到注册成功页
+    window.location.href = '/register-success';
+} else {
+    showMessage('error', data.message || '注册失败');
+}
             } catch (error) {
                 console.error('注册错误:', error);
                 showMessage('error', '网络错误，请稍后重试');
