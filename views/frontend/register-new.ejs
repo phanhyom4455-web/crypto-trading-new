@@ -106,7 +106,7 @@
             
             <div class="register-tabs">
                 <button class="tab-btn active" id="emailTab" onclick="switchTab('email')">📧 邮箱注册</button>
-                <button class="tab-btn" id="phoneTab" onclick="switchTab('phone')">📱 手机注册</button>
+               
             </div>
             
             <div class="message" id="message"></div>
@@ -183,23 +183,21 @@
     </div>
     
     <script>
-        let currentTab = 'email';
-        let tempUserData = null;
+        let currentTab = 'email';   // 锁定为邮箱注册
+       let tempUserData = null;
+
+// 页面加载时强制邮箱模式
+window.addEventListener('DOMContentLoaded', () => {
+    switchTab('email');
+});
         
-        function switchTab(tab) {
-            currentTab = tab;
-            if (tab === 'email') {
-                document.getElementById('emailTab').classList.add('active');
-                document.getElementById('phoneTab').classList.remove('active');
-                document.getElementById('emailGroup').style.display = 'block';
-                document.getElementById('phoneGroup').style.display = 'none';
-            } else {
-                document.getElementById('phoneTab').classList.add('active');
-                document.getElementById('emailTab').classList.remove('active');
-                document.getElementById('emailGroup').style.display = 'none';
-                document.getElementById('phoneGroup').style.display = 'block';
-            }
-        }
+      function switchTab(tab) {
+    // 只保留邮箱模式，直接固定为邮箱
+    currentTab = 'email';
+    document.getElementById('emailGroup').style.display = 'block';
+    var phoneGroup = document.getElementById('phoneGroup');
+    if (phoneGroup) phoneGroup.style.display = 'none';
+}
         
         function showMessage(type, text) {
             const message = document.getElementById('message');
