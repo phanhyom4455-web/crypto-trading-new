@@ -158,21 +158,10 @@ app.post('/api/register', async (req, res) => {
             phone_verify_code: phoneCode,
             phone_verify_code_expires: phoneCode ? new Date(Date.now() + 10 * 60 * 1000) : null
         });
-// 发送验证码邮件（真实发送）
-try {
-    const mailResult = await sendVerificationEmail(user.email, emailCode);
-    console.log('📧 邮件发送结果:', mailResult);
-} catch (sendError) {
-    console.error('❌ 邮件发送异常:', sendError);
-}
-// 发送手机短信验证码（如果填写了手机号）
+// 【临时禁用】邮件/短信验证码发送
+console.log('📧 [模拟] 邮箱验证码:', emailCode);
 if (phone) {
-    try {
-        const smsResult = await sendSms(phone, phoneCode);
-        console.log('📱 短信发送结果:', smsResult);
-    } catch (smsError) {
-        console.error('❌ 短信发送异常:', smsError);
-    }
+    console.log('📱 [模拟] 短信验证码:', phoneCode);
 }
         const currencies = ['USDT', 'BTC', 'ETH', 'ADA'];
         for (const currency of currencies) {
@@ -198,7 +187,7 @@ if (phone) {
             success: true,
             message: '注册成功！验证码已发送到您的邮箱和手机',
             user: { id: user.id, username: user.username, email: user.email, phone: user.phone },
-            devCodes: { email: emailCode, phone: phoneCode }
+            
         });
     } catch (error) {
         console.error('注册错误:', error);
