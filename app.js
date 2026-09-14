@@ -598,17 +598,28 @@ app.post('/api/security/2fa', async (req, res) => {
             security = await Security.create({ user_id: req.session.user.id });
         }
         if (enabled) {
-            const secret = crypto.randomBytes(10).toString('hex').toUpperCase();
-            await security.update({
-                google_secret: secret,
-                google_enabled: true
-            });
-            await User.update({ twofa_enabled: true, twofa_secret: secret }, { where: { id: req.session.user.id } });
-            res.json({
-                success: true,
-                message: '2FA已启用！',
-                secret: secret
-            });
+    const secret = crypto.randomBytes(10).toString('hex').toUpperCase();
+
+    // ✅ 生成 otpauth 链接
+    const issuer = 'CoinTrade';
+    const account = req.session.user.username;
+    const otpauthUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(account)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+
+    // ✅ 生成二维码图片 URL
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`;
+
+    await security.update({
+        google_secret: secret,
+        google_enabled: true
+    });
+    await User.update({ twofa_enabled: true, twofa_secret: secret }, { where: { id: req.session.user.id } });
+
+    res.json({
+        success: true,
+        message: '2FA已启用！',
+        secret: secret,
+        qrCode: qrCodeUrl        // ✅ 新增，返回二维码链接
+    });
         } else {
             await security.update({
                 google_secret: null,
@@ -659,11 +670,7 @@ app.get('/admin/login', (req, res) => {
 app.post('/admin/login', async (req, res) => {
     const { username, password } = req.body;
     
-    if (username === 'admin' && password === 'password') {
-        req.session.admin = { username: 'admin', name: '管理员' };
-        return res.redirect('/admin/dashboard');
-    }
-
+   
     try {
         const admin = await User.findOne({ where: { username: username } });
         if (admin && admin.username === 'admin') {
@@ -980,6 +987,13 @@ app.get('/admin/settings', requireLogin, (req, res) => {
     });
 });
 
+app.get('/admin/change-password', requireLogin, (req, res) => {
+    res.render('admin/change-password', {
+        title: '修改密码',
+        currentPage: 'change-password'
+    });
+});
+
 app.get('/admin/logs', requireLogin, (req, res) => {
     res.render('admin/logs', {
         title: '操作日志',
@@ -1245,6 +1259,77 @@ app.delete('/api/users/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// ============================================
+// 用户修改自己的登录密码
+// ============================================
+app.post('/api/user/change-password', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.json({ success: false, message: '请先登录' });
+        }
+        const { oldPassword, newPassword } = req.body;
+        if (!oldPassword || !newPassword) {
+            return res.json({ success: false, message: '请填写完整信息' });
+        }
+        if (newPassword.length < 6) {
+            return res.json({ success: false, message: '新密码至少6个字符' });
+        }
+
+        const user = await User.findByPk(req.session.user.id);
+        if (!user) {
+            return res.json({ success: false, message: '用户不存在' });
+        }
+
+        const validOld = await bcrypt.compare(oldPassword, user.password);
+        if (!validOld) {
+            return res.json({ success: false, message: '原密码错误' });
+        }
+
+        const hashedNew = await bcrypt.hash(newPassword, 10);
+        await user.update({ password: hashedNew });
+
+        res.json({ success: true, message: '✅ 登录密码修改成功！' });
+    } catch (error) {
+        console.error('修改密码错误:', error);
+        res.json({ success: false, message: '修改失败，请稍后重试' });
+    }
+});
+// ============================================
+// 管理员修改自己的密码
+// ============================================
+app.post('/api/admin/change-password', async (req, res) => {
+    try {
+        if (!req.session.admin) {
+            return res.json({ success: false, message: '请先登录管理员账号' });
+        }
+        const { oldPassword, newPassword } = req.body;
+        if (!oldPassword || !newPassword) {
+            return res.json({ success: false, message: '请填写完整信息' });
+        }
+        if (newPassword.length < 6) {
+            return res.json({ success: false, message: '新密码至少6个字符' });
+        }
+
+        const admin = await User.findOne({ where: { username: 'admin' } });
+        if (!admin) {
+            return res.json({ success: false, message: '管理员账号不存在' });
+        }
+
+        const validOld = await bcrypt.compare(oldPassword, admin.password);
+        if (!validOld) {
+            return res.json({ success: false, message: '原密码错误' });
+        }
+
+        const hashedNew = await bcrypt.hash(newPassword, 10);
+        await admin.update({ password: hashedNew });
+
+        res.json({ success: true, message: '✅ 管理员密码修改成功！' });
+    } catch (error) {
+        console.error('管理员修改密码错误:', error);
+        res.json({ success: false, message: '修改失败，请稍后重试' });
+    }
+});
+
 
 app.post('/api/admin/reset-password', requireLogin, async (req, res) => {
     try {
@@ -1270,12 +1355,15 @@ app.post('/api/admin/reset-password', requireLogin, async (req, res) => {
     }
 });
 
-app.post('/api/admin/reset-security', requireLogin, async (req, res) => {
+// ============================================
+// 兼容前端：重置资金密码
+// ============================================
+app.post('/api/admin/reset-fund-password', requireLogin, async (req, res) => {
     try {
         if (!req.session.admin) {
             return res.json({ success: false, message: '请先登录管理员账号' });
         }
-        const { user_id, type } = req.body;
+        const { user_id } = req.body;
         if (!user_id) {
             return res.json({ success: false, message: '请选择用户' });
         }
@@ -1283,28 +1371,27 @@ app.post('/api/admin/reset-security', requireLogin, async (req, res) => {
         if (!user) {
             return res.json({ success: false, message: '用户不存在' });
         }
-        let security = await Security.findOne({ where: { user_id: user_id } });
+        let security = await Security.findOne({ where: { user_id } });
         if (!security) {
-            security = await Security.create({ user_id: user_id });
+            security = await Security.create({ user_id });
         }
-        if (type === 'fund_password') {
-            await security.update({ fund_password: null, fund_password_enabled: false });
-            return res.json({ success: true, message: `✅ 已重置用户 ${user.username} 的资金密码` });
-        } else if (type === '2fa') {
-            await security.update({ google_secret: null, google_enabled: false });
-            await User.update({ twofa_enabled: false, twofa_secret: null }, { where: { id: user_id } });
-            return res.json({ success: true, message: `✅ 已重置用户 ${user.username} 的谷歌验证器(2FA)` });
-        } else {
-            return res.json({ success: false, message: '未知操作类型' });
-        }
+        await security.update({ fund_password: null, fund_password_enabled: false });
+        res.json({ success: true, message: `✅ 已重置用户 ${user.username} 的资金密码` });
     } catch (error) {
+        console.error('重置资金密码失败：', error);
         res.json({ success: false, message: '操作失败，请稍后重试' });
     }
 });
 
-app.post('/api/admin/verify-user', requireLogin, async (req, res) => {
+// ============================================
+// 兼容前端：关闭 2FA
+// ============================================
+app.post('/api/admin/disable-2fa', requireLogin, async (req, res) => {
     try {
-        const { user_id, action, note } = req.body;
+        if (!req.session.admin) {
+            return res.json({ success: false, message: '请先登录管理员账号' });
+        }
+        const { user_id } = req.body;
         if (!user_id) {
             return res.json({ success: false, message: '请选择用户' });
         }
@@ -1312,12 +1399,15 @@ app.post('/api/admin/verify-user', requireLogin, async (req, res) => {
         if (!user) {
             return res.json({ success: false, message: '用户不存在' });
         }
-        await User.update({ verify_status: action, verify_note: note || '' }, { where: { id: user_id } });
-        res.json({
-            success: true,
-            message: `✅ 用户 ${user.username} 审核${action === 'approved' ? '通过' : '拒绝'}成功`
-        });
+        let security = await Security.findOne({ where: { user_id } });
+        if (!security) {
+            security = await Security.create({ user_id });
+        }
+        await security.update({ google_secret: null, google_enabled: false });
+        await User.update({ twofa_enabled: false, twofa_secret: null }, { where: { id: user_id } });
+        res.json({ success: true, message: `✅ 已关闭用户 ${user.username} 的谷歌验证器(2FA)` });
     } catch (error) {
+        console.error('关闭2FA失败：', error);
         res.json({ success: false, message: '操作失败，请稍后重试' });
     }
 });

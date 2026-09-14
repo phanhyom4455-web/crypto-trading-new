@@ -127,6 +127,19 @@
                     <h5 class="fw-bold mb-3"><i class="fas fa-shield-alt text-primary me-2"></i>安全设置</h5>
 
                     <div id="message" style="display: none;" class="alert mb-3"></div>
+                    <!-- 登录密码 -->
+<div class="list-group-item d-flex justify-content-between align-items-center">
+    <div>
+        <i class="fas fa-lock text-primary me-2"></i>
+        <strong>登录密码</strong>
+        <p class="text-muted small mb-0">用于登录账号，请定期更换</p>
+    </div>
+    <div>
+        <button class="btn btn-primary btn-sm" onclick="showChangePasswordModal()">
+            <i class="fas fa-edit"></i> 修改
+        </button>
+    </div>
+</div>
 
                     <!-- 资金密码 -->
                     <div class="list-group-item d-flex justify-content-between align-items-center">
@@ -268,6 +281,36 @@
             </div>
         </div>
     </div>
+<!-- ===== 修改登录密码弹窗 ===== -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-lock text-primary me-2"></i>修改登录密码</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="changePwdMsg" style="display: none;" class="alert"></div>
+                <div class="mb-3">
+                    <label class="fw-bold">原密码</label>
+                    <input type="password" class="form-control" id="oldPassword" placeholder="请输入当前登录密码">
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">新密码</label>
+                    <input type="password" class="form-control" id="newPassword" placeholder="请输入新密码（至少6位）">
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">确认新密码</label>
+                    <input type="password" class="form-control" id="newPasswordConfirm" placeholder="请再次输入新密码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="changePassword()">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <footer class="footer">
         <div class="container">
@@ -530,6 +573,70 @@
         // 页面加载
         // ============================================
         document.addEventListener('DOMContentLoaded', loadSecurityStatus);
+// ============================================
+// 修改登录密码
+// ============================================
+function showChangePasswordModal() {
+    document.getElementById('oldPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('newPasswordConfirm').value = '';
+    document.getElementById('changePwdMsg').style.display = 'none';
+    new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+}
+
+async function changePassword() {
+    const oldPwd = document.getElementById('oldPassword').value;
+    const newPwd = document.getElementById('newPassword').value;
+    const newPwdConfirm = document.getElementById('newPasswordConfirm').value;
+    const msg = document.getElementById('changePwdMsg');
+
+    if (!oldPwd) {
+        msg.style.display = 'block';
+        msg.textContent = '❌ 请输入原密码';
+        msg.className = 'alert alert-danger';
+        return;
+    }
+    if (!newPwd || newPwd.length < 6) {
+        msg.style.display = 'block';
+        msg.textContent = '❌ 新密码至少6个字符';
+        msg.className = 'alert alert-danger';
+        return;
+    }
+    if (newPwd !== newPwdConfirm) {
+        msg.style.display = 'block';
+        msg.textContent = '❌ 两次输入的新密码不一致';
+        msg.className = 'alert alert-danger';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/user/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            msg.style.display = 'block';
+            msg.textContent = '✅ 登录密码修改成功！';
+            msg.className = 'alert alert-success';
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                showMessage('✅ 登录密码修改成功！', 'success');
+            }, 1500);
+        } else {
+            msg.style.display = 'block';
+            msg.textContent = '❌ ' + data.message;
+            msg.className = 'alert alert-danger';
+        }
+    } catch (error) {
+        msg.style.display = 'block';
+        msg.textContent = '❌ 网络错误，请重试';
+        msg.className = 'alert alert-danger';
+    }
+}
+
     </script>
 </body>
 </html>

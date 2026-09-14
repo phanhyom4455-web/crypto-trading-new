@@ -14,7 +14,7 @@
             const response = await fetch('/api/admin/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: userId, newPassword: newPassword })
+                body: JSON.stringify({ user_id: userId, password: newPassword })
             });
             const result = await response.json();
             if (result.success) {
@@ -73,7 +73,7 @@
         fetch('/api/admin/reset-fund-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userId, fundPassword: pwd })
+          body: JSON.stringify({ user_id: userId, fundPassword: pwd })
         }).then(r => r.json()).then(result => {
             document.querySelectorAll('div[style*="z-index:9999"]').forEach(el => el.remove());
             alert(result.success ? '✅ 资金密码已重置' : '❌ 失败：' + result.message);
@@ -93,7 +93,7 @@
         fetch('/api/admin/disable-2fa', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userId })
+            body: JSON.stringify({ user_id: userId })
         }).then(r => r.json()).then(result => {
             alert(result.success ? '✅ 2FA 已关闭' : '❌ 失败：' + result.message);
         }).catch(() => {
