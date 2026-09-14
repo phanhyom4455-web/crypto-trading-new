@@ -150,7 +150,7 @@ app.post('/api/register', async (req, res) => {
             vip: false,
             points: 100,
             status: 'active',
-            verify_status: 'pending',
+            verify_status: 'none',
             email_verified: false,
             phone_verified: false,
             email_verify_code: emailCode,

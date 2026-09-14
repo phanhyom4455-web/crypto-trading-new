@@ -14,7 +14,7 @@ const User = sequelize.define('User', {
     status: { type: DataTypes.STRING, defaultValue: 'active' },
     real_name: { type: DataTypes.STRING },
     id_card: { type: DataTypes.STRING },
-    verify_status: { type: DataTypes.STRING, defaultValue: 'pending' },
+    verify_status: { type: DataTypes.STRING, defaultValue: 'none' },
     verify_note: { type: DataTypes.STRING },
     twofa_enabled: { type: DataTypes.BOOLEAN, defaultValue: false },
     twofa_secret: { type: DataTypes.STRING },
