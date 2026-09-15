@@ -1670,8 +1670,8 @@ sequelize.sync({ alter: false })
 (async () => {
   try {
     const admin = await User.findOne({ where: { username: 'admin' } });
+    const hashedPwd = await bcrypt.hash('password', 10);
     if (!admin) {
-      const hashedPwd = await bcrypt.hash('password', 10);
       await User.create({
         username: 'admin',
         email: 'admin@example.com',
@@ -1680,7 +1680,9 @@ sequelize.sync({ alter: false })
       });
       console.log('✅ 默认管理员已创建：admin / password');
     } else {
-      console.log('✅ 管理员账号已存在');
+      // ✅ 每次启动都把 admin 密码重置为 password（临时方案）
+      await admin.update({ password: hashedPwd });
+      console.log('✅ 管理员密码已重置为：password');
     }
   } catch (e) {
     console.error('❌ 创建管理员失败：', e.message);
