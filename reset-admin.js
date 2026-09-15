@@ -5,19 +5,23 @@ const User = require('./models/User');
 (async () => {
     try {
         const hashedPwd = await bcrypt.hash('password', 10);
-        const admin = await User.findOne({ where: { username: 'admin' } });
 
-        if (!admin) {
+        const admins = await User.findAll({ where: { username: 'admin' } });
+
+        if (admins.length === 0) {
             await User.create({
                 username: 'admin',
                 email: 'admin@example.com',
                 password: hashedPwd,
                 status: 'active'
             });
-            console.log('✅ 已创建 admin，密码重置为 password');
+            console.log('✅ 已创建 admin，密码为 password');
         } else {
-            await admin.update({ password: hashedPwd });
-            console.log('✅ 已把 admin 的密码重置为 password');
+            for (const admin of admins) {
+                await admin.update({ password: hashedPwd });
+                console.log(`✅ 已重置 id=${admin.id} 的 admin 密码为 password`);
+            }
+            console.log(`✅ 共重置了 ${admins.length} 个 admin 账号`);
         }
         process.exit(0);
     } catch (e) {
