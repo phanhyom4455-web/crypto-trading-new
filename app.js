@@ -1664,8 +1664,7 @@ sequelize.sync({ alter: false })
   .catch(err => console.error('❌ 同步模型表失败：', err.message));
 
 // ============================================
-// ============================================
-// 确保默认管理员存在
+// 确保默认管理员存在（必须在 sync 之后）
 // ============================================
 (async () => {
   try {
@@ -1680,7 +1679,6 @@ sequelize.sync({ alter: false })
       });
       console.log('✅ 默认管理员已创建：admin / password');
     } else {
-      // ✅ 每次启动都把 admin 密码重置为 password（临时方案）
       await admin.update({ password: hashedPwd });
       console.log('✅ 管理员密码已重置为：password');
     }
@@ -1688,6 +1686,9 @@ sequelize.sync({ alter: false })
     console.error('❌ 创建管理员失败：', e.message);
   }
 })();
+// ============================================
+// ============================================
+
 
 // 自动建表
 sequelize.query(`
