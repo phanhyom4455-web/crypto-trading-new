@@ -1384,30 +1384,35 @@ app.post('/api/admin/reset-fund-password', requireLogin, async (req, res) => {
 });
 
 // ============================================
-// 兼容前端：关闭 2FA
 // ============================================
-app.post('/api/admin/disable-2fa', requireLogin, async (req, res) => {
+// 兼容前端：用户实名审核（通过 / 拒绝）
+// ============================================
+app.post('/api/admin/verify-user', requireLogin, async (req, res) => {
     try {
         if (!req.session.admin) {
             return res.json({ success: false, message: '请先登录管理员账号' });
         }
-        const { user_id } = req.body;
+        const { user_id, action, note } = req.body;
         if (!user_id) {
             return res.json({ success: false, message: '请选择用户' });
+        }
+        if (!action || !['approved', 'rejected'].includes(action)) {
+            return res.json({ success: false, message: '参数错误' });
         }
         const user = await User.findByPk(user_id);
         if (!user) {
             return res.json({ success: false, message: '用户不存在' });
         }
-        let security = await Security.findOne({ where: { user_id } });
-        if (!security) {
-            security = await Security.create({ user_id });
-        }
-        await security.update({ google_secret: null, google_enabled: false });
-        await User.update({ twofa_enabled: false, twofa_secret: null }, { where: { id: user_id } });
-        res.json({ success: true, message: `✅ 已关闭用户 ${user.username} 的谷歌验证器(2FA)` });
+        await User.update(
+            { verify_status: action, verify_note: note || '' },
+            { where: { id: user_id } }
+        );
+        res.json({
+            success: true,
+            message: `✅ 用户 ${user.username} 审核${action === 'approved' ? '通过' : '拒绝'}`
+        });
     } catch (error) {
-        console.error('关闭2FA失败：', error);
+        console.error('用户审核失败：', error);
         res.json({ success: false, message: '操作失败，请稍后重试' });
     }
 });
