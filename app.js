@@ -82,7 +82,24 @@ const requireLogin = (req, res, next) => {
         res.redirect('/admin/login');
     }
 };
-
+// ✅ 检查用户是否被禁用的中间件
+const requireActiveUser = async (req, res, next) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: '请先登录' });
+    }
+    try {
+        const user = await User.findByPk(req.session.user.id);
+        if (!user) {
+            return res.status(401).json({ success: false, message: '用户不存在' });
+        }
+        if (user.status !== 'active') {
+            return res.status(403).json({ success: false, message: '账号已被禁用，请联系客服' });
+        }
+        next();
+    } catch (e) {
+        return res.status(500).json({ success: false, message: '服务器错误' });
+    }
+};
 // ============================================
 // 全局中间件
 // ============================================
@@ -175,13 +192,14 @@ if (phone) {
         }
 
         req.session.user = {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            phone: user.phone,
-            vip: user.vip,
-            verify_status: 'pending'
-        };
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    phone: user.phone,
+    vip: user.vip,
+    verify_status: 'pending',
+    short_id: user.short_id        // ← 加这行
+};
 
         res.json({
             success: true,
@@ -231,8 +249,13 @@ app.post('/api/login', async (req, res) => {
         }
 
         const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
+                if (!validPassword) {
             return res.json({ success: false, message: '密码错误' });
+        }
+
+        // ✅ 检查账号是否被禁用
+        if (user.status !== 'active') {
+            return res.json({ success: false, message: '账号已被禁用，请联系客服' });
         }
 
         if (user.twofa_enabled) {
@@ -246,14 +269,15 @@ app.post('/api/login', async (req, res) => {
 
         await user.update({ last_login: new Date() });
 
-        req.session.user = {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            phone: user.phone,
-            vip: user.vip,
-            verify_status: user.verify_status
-        };
+       req.session.user = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    phone: user.phone,
+    vip: user.vip,
+    verify_status: user.verify_status,
+    short_id: user.short_id        // ← 加这行
+};
 
         res.json({ success: true, message: '登录成功', redirect: '/' });
     } catch (error) {
@@ -549,7 +573,7 @@ app.post('/api/security/fund-password', async (req, res) => {
     }
 });
 
-app.post('/api/security/verify-fund-password', async (req, res) => {
+app.post('/api/security/verify-fund-password', requireActiveUser, async (req, res) => {
     try {
         if (!req.session.user) {
             return res.json({ success: false, message: '请先登录' });
@@ -587,7 +611,7 @@ app.get('/api/security/2fa-status', async (req, res) => {
     }
 });
 
-app.post('/api/security/2fa', async (req, res) => {
+app.post('/api/security/2fa', requireActiveUser, async (req, res) => {
     try {
         if (!req.session.user) {
             return res.json({ success: false, message: '请先登录' });
@@ -637,7 +661,7 @@ app.post('/api/security/2fa', async (req, res) => {
     }
 });
 
-app.post('/api/security/verify-2fa', async (req, res) => {
+app.post('/api/security/verify-2fa', requireActiveUser, async (req, res) => {
     try {
         if (!req.session.user) {
             return res.json({ success: false, message: '请先登录' });
@@ -734,12 +758,43 @@ app.get('/admin/dashboard', requireLogin, async (req, res) => {
 app.get('/admin/users', requireLogin, async (req, res) => {
     try {
         const users = await User.findAll({ order: [['id', 'DESC']] });
+
+        // ✅ 币价
+        const COIN_PRICES = {
+            'USDT': 1, 'BTC': 62450, 'ETH': 2450, 'ADA': 0.452,
+            'DOT': 6.25, 'SOL': 25.80, 'AVAX': 14.20
+        };
+
+        // ✅ 给每个用户算余额
+        const usersWithBalance = [];
+        for (const user of users) {
+            const assets = await Asset.findAll({ where: { user_id: user.id } });
+            let totalValue = 0, frozenValue = 0, usdtBalance = 0;
+
+            for (const a of assets) {
+                const bal = parseFloat(a.balance) || 0;
+                const frozen = parseFloat(a.frozen) || 0;
+                const price = COIN_PRICES[a.currency] || 0;
+                totalValue += bal * price;
+                frozenValue += frozen * price;
+                if (a.currency === 'USDT') usdtBalance += bal;
+            }
+
+            usersWithBalance.push({
+                ...user.toJSON(),
+                balance: parseFloat(totalValue.toFixed(2)),
+                frozen: parseFloat(frozenValue.toFixed(2)),
+                usdtBalance: usdtBalance
+            });
+        }
+
         res.render('admin/users', {
             title: '用户管理',
-            users: users,
+            users: usersWithBalance,
             currentPage: 'users'
         });
     } catch (error) {
+        console.error('加载用户失败：', error);
         res.status(500).send('服务器错误');
     }
 });
@@ -1382,6 +1437,65 @@ app.post('/api/admin/reset-fund-password', requireLogin, async (req, res) => {
         res.json({ success: false, message: '操作失败，请稍后重试' });
     }
 });
+// ============================================
+// 关闭用户的 2FA（后台用）
+// ============================================
+app.post('/api/admin/disable-2fa', requireLogin, async (req, res) => {
+    try {
+        if (!req.session.admin) {
+            return res.json({ success: false, message: '请先登录管理员账号' });
+        }
+        const { user_id } = req.body;
+        if (!user_id) {
+            return res.json({ success: false, message: '请选择用户' });
+        }
+        const user = await User.findByPk(user_id);
+        if (!user) {
+            return res.json({ success: false, message: '用户不存在' });
+        }
+        // 关闭 User 表的 2FA
+        await user.update({ twofa_enabled: false, twofa_secret: null });
+        // 关闭 Security 表的 2FA
+        let security = await Security.findOne({ where: { user_id } });
+        if (!security) {
+            security = await Security.create({ user_id });
+        }
+        await security.update({ google_secret: null, google_enabled: false });
+
+        res.json({ success: true, message: `✅ 已关闭用户 ${user.username} 的 2FA` });
+    } catch (error) {
+        console.error('关闭 2FA 失败：', error);
+        res.json({ success: false, message: '操作失败，请稍后重试' });
+    }
+});
+// ============================================
+// 切换用户状态（启用 / 禁用）
+// ============================================
+app.post('/api/admin/toggle-user-status', requireLogin, async (req, res) => {
+    try {
+        if (!req.session.admin) {
+            return res.json({ success: false, message: '请先登录管理员账号' });
+        }
+        const { user_id } = req.body;
+        if (!user_id) {
+            return res.json({ success: false, message: '请选择用户' });
+        }
+        const user = await User.findByPk(user_id);
+        if (!user) {
+            return res.json({ success: false, message: '用户不存在' });
+        }
+        const newStatus = user.status === 'active' ? 'banned' : 'active';
+        await user.update({ status: newStatus });
+        res.json({
+            success: true,
+            message: `✅ 用户 ${user.username} 已${newStatus === 'banned' ? '禁用' : '启用'}`,
+            newStatus: newStatus
+        });
+    } catch (error) {
+        console.error('切换用户状态失败：', error);
+        res.json({ success: false, message: '操作失败，请稍后重试' });
+    }
+});
 
 // ============================================
 // ============================================
@@ -1451,7 +1565,7 @@ app.get('/api/stats', async (req, res) => {
 // ============================================
 // 交易 API
 // ============================================
-app.post('/api/trade', async (req, res) => {
+  app.post('/api/trade', requireActiveUser, async (req, res) => {
     try {
         if (!req.session.user) {
             return res.json({ success: false, message: '请先登录' });
@@ -1502,7 +1616,7 @@ app.post('/api/trade', async (req, res) => {
 // ============================================
 // 充值 API
 // ============================================
-app.post('/api/deposit', async (req, res) => {
+app.post('/api/deposit', requireActiveUser, async (req, res) => {
     try {
         if (!req.session.user) {
             return res.json({ success: false, message: '请先登录' });
@@ -1539,7 +1653,7 @@ app.post('/api/deposit', async (req, res) => {
 // ============================================
 // 提现 API
 // ============================================
-app.post('/api/withdraw', async (req, res) => {
+app.post('/api/withdraw', requireActiveUser, async (req, res) => {
     try {
         if (!req.session.user) {
             return res.json({ success: false, message: '请先登录' });
@@ -1591,19 +1705,6 @@ app.get('/api/assets', async (req, res) => {
             return res.json({ success: false, message: '请先登录' });
         }
         let assets = await Asset.findAll({ where: { user_id: req.session.user.id } });
-        if (assets.length === 0) {
-            const defaultCurrencies = ['USDT', 'BTC', 'ETH', 'ADA'];
-            for (const currency of defaultCurrencies) {
-                await Asset.create({
-                    user_id: req.session.user.id,
-                    currency: currency,
-                    balance: currency === 'USDT' ? 10000 : 0.01,
-                    frozen: 0,
-                    total: currency === 'USDT' ? 10000 : 0.01
-                });
-            }
-            assets = await Asset.findAll({ where: { user_id: req.session.user.id } });
-        }
         res.json({ success: true, assets: assets });
     } catch (error) {
         res.json({ success: false, message: error.message });

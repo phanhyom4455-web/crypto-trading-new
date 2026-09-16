@@ -53,8 +53,8 @@ module.exports = (app) => {
                         frozenValue += frozen * price;
 
                         if (asset.currency === 'USDT') {
-                            usdtBalance = balance;
-                        }
+                           usdtBalance += balance;
+                       }
 
                         assetsDetail.push({
                             currency: asset.currency,

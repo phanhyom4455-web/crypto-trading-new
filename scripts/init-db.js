@@ -71,7 +71,7 @@ async function initDatabase() {
                 await Asset.create({
                     user_id: user.id,
                     currency: currency,
-                    balance: currency === 'USDT' ? Math.round(Math.random() * 10000 + 1000) : Math.round(Math.random() * 10 + 0.1),
+                    balance: 0,
                     frozen: 0,
                     total: 0
                 });

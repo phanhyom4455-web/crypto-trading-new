@@ -14,21 +14,21 @@
 
                 const rows = tbody.querySelectorAll('tr');
                 rows.forEach(row => {
-                    const idCell = row.querySelector('td:first-child');
-                    if (!idCell) return;
+                    // ✅ 现在第 1 列是 short_id（4位数字），用它匹配
+                    const shortIdCell = row.querySelector('td:first-child');
+                    if (!shortIdCell) return;
 
-                    const userId = parseInt(idCell.textContent.trim());
-                    const user = data.users.find(u => u.id === userId);
+                    const shortId = shortIdCell.textContent.trim();
+                    const user = data.users.find(u => String(u.short_id || '').padStart(4, '0') === shortId);
 
                     if (user) {
-                        const emailCell = row.querySelectorAll('td')[2];
-                        if (emailCell) {
-                            // ✅ 同时显示：可用 + 总资产
-                            const balanceTd = document.createElement('td');
+                        // ✅ 直接找"余额列"来填充
+                        const balanceCell = row.querySelector('td.balance-slot');
+                        if (balanceCell) {
                             const available = (user.balance - user.frozen).toFixed(2);
                             const total = user.balance.toFixed(2);
 
-                            balanceTd.innerHTML =
+                            balanceCell.innerHTML =
                                 '<div style="font-size:12px;color:#666;">可用: <strong style="color:#10b981;">$' + available + '</strong></div>' +
                                 '<div style="font-size:12px;color:#666;">总额: <strong style="color:#3b82f6;">$' + total + '</strong></div>';
 
@@ -36,9 +36,7 @@
                             const detailLines = user.assetsDetail
                                 .filter(a => a.balance > 0)
                                 .map(a => a.currency + ': 可用' + a.balance + ' × $' + a.price + ' = $' + a.value.toFixed(2));
-                            balanceTd.title = '资产明细：\n' + detailLines.join('\n');
-
-                            emailCell.parentNode.insertBefore(balanceTd, emailCell.nextSibling);
+                            balanceCell.title = '资产明细：\n' + detailLines.join('\n');
                         }
                     }
                 });

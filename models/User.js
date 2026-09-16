@@ -7,6 +7,7 @@ const User = sequelize.define('User', {
     email: { type: DataTypes.STRING, unique: true, allowNull: false },
     phone: { type: DataTypes.STRING, unique: true, allowNull: true },
     password: { type: DataTypes.STRING, allowNull: false },
+        short_id: { type: DataTypes.STRING },
     vip: { type: DataTypes.BOOLEAN, defaultValue: false },
     points: { type: DataTypes.INTEGER, defaultValue: 0 },
     orders: { type: DataTypes.INTEGER, defaultValue: 0 },
@@ -28,7 +29,28 @@ const User = sequelize.define('User', {
     reset_password_token: { type: DataTypes.STRING },
     reset_password_expires: { type: DataTypes.DATE }
 }, {
-    tableName: 'users'
+    tableName: 'users',
+    hooks: {
+        // ✅ 创建用户前，自动生成唯一的 4 位 short_id
+        beforeCreate: async (user) => {
+            if (!user.short_id) {
+                let shortId;
+                let isUnique = false;
+                let attempts = 0;
+                while (!isUnique && attempts < 100) {
+                    shortId = Math.floor(1000 + Math.random() * 9000).toString();
+                    const exist = await User.findOne({ where: { short_id: shortId } });
+                    if (!exist) isUnique = true;
+                    attempts++;
+                }
+                if (isUnique) {
+                    user.short_id = shortId;
+                } else {
+                    throw new Error('无法生成唯一的 short_id');
+                }
+            }
+        }
+    }
 });
 
 module.exports = User;

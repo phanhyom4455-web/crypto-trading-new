@@ -42,16 +42,7 @@ router.get('/assets', async (req, res) => {
             where: { user_id: req.session.user.id }
         });
         if (assets.length === 0) {
-            const defaultCurrencies = ['USDT', 'BTC', 'ETH', 'ADA'];
-            for (const currency of defaultCurrencies) {
-                await Asset.create({
-                    user_id: req.session.user.id,
-                    currency: currency,
-                    balance: currency === 'USDT' ? 10000 : 0.01,
-                    frozen: 0,
-                    total: currency === 'USDT' ? 10000 : 0.01
-                });
-            }
+          
             assets = await Asset.findAll({
                 where: { user_id: req.session.user.id }
             });

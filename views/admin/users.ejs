@@ -8,10 +8,14 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
+            <!-- ✅ 搜索框 -->
+            <div class="mb-3">
+                <input type="text" id="shortIdSearch" class="form-control" placeholder="🔍 输入用户ID搜索（如 6845）" style="max-width: 300px;">
+            </div>
                 <table class="table table-hover">
                     <thead>
-                        <tr>
-                            <th>ID</th>
+                            <tr>
+                            <th>用户ID</th>
                             <th>用户名</th>
                             <th>邮箱</th>
                            <th>USDT余额</th>
@@ -25,10 +29,19 @@
                     </thead>
                     <tbody>
                         <% users.forEach(user => { %>
-                        <tr>
-                            <td><%= user.id %></td>
+                             <tr>
+                          
+                            <td>
+                                <span style="font-family: monospace; color:#667eea; font-weight: 600;">
+                                    <%= String(user.short_id || '').padStart(4, '0') %>
+                                </span>
+                            </td>
                             <td><strong><%= user.username %></strong></td>
                             <td><%= user.email %></td>
+                           <td>
+    <div style="font-size:12px;color:#666;">可用: <strong style="color:#10b981;">$<%= (user.balance - user.frozen).toFixed(2) %></strong></div>
+    <div style="font-size:12px;color:#666;">总额: <strong style="color:#3b82f6;">$<%= user.balance.toFixed(2) %></strong></div>
+</td>
                             <td><%= user.vip ? '✅' : '❌' %></td>
                             <td><%= user.points %></td>
                             <td><%= user.orders %></td>
@@ -46,7 +59,10 @@
                                 <button class="btn btn-sm btn-outline-info" onclick="viewSecurity(<%= user.id %>, '<%= user.username %>')">安全设置</button>
                                <button class="btn btn-sm btn-outline-dark" onclick="deductBalance(<%= user.id %>, '<%= user.username %>')">扣除</button>
                               <button class="btn btn-sm btn-outline-success" onclick="addBalance(<%= user.id %>, '<%= user.username %>')">新增</button>
-</td>
+                             <button class="btn btn-sm btn-outline-<%= user.status === 'active' ? 'secondary' : 'success' %>" onclick="toggleUserStatus(<%= user.id %>, '<%= user.username %>')">
+                           <%= user.status === 'active' ? '禁用' : '启用' %>
+                    </button>
+                  </td>
                             </td>
                         </tr>
                         <% }) %>
@@ -129,6 +145,55 @@
 </script>
 <%- include('includes/admin-users-actions') %>
 <%- include('includes/admin-deduct') %>
-<%- include('includes/users-balance') %>
+
+<script>
+    // ✅ 按 用户ID(short_id) 实时搜索
+    document.addEventListener('DOMContentLoaded', function() {
+        var searchInput = document.getElementById('shortIdSearch');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function() {
+            var keyword = this.value.trim();
+            var rows = document.querySelectorAll('table tbody tr');
+
+            rows.forEach(function(row) {
+                // 第 2 列是"用户ID"列（索引从 0 开始，所以是 [1]）
+                var tds = row.querySelectorAll('td');
+                if (tds.length < 2) {
+                    row.style.display = 'none';
+                    return;
+                }
+                var shortId = tds[0].textContent.trim();
+
+                if (keyword === '' || shortId.indexOf(keyword) !== -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+<script>
+    // ✅ 切换用户状态（启用/禁用）
+    function toggleUserStatus(userId, username) {
+        const action = confirm('确定要切换用户 "' + username + '" 的状态吗？');
+        if (!action) return;
+
+        fetch('/api/admin/toggle-user-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        })
+        .then(r => r.json())
+        .then(result => {
+            alert(result.success ? result.message : '❌ ' + result.message);
+            if (result.success) location.reload();
+        })
+        .catch(() => {
+            alert('❌ 请求失败，请检查网络');
+        });
+    }
+</script>
 </body>
 </html>

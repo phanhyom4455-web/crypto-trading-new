@@ -59,14 +59,14 @@ module.exports = (app) => {
                 totalValue += bal * price;
                 assetMap[a.currency] = a;
             }
+console.log('🐛 调试: 用户', userId, 'totalValue=', totalValue, 'deductAmount=', deductAmount, '差值=', (deductAmount - totalValue));
 
-            if (totalValue < deductAmount) {
-                return res.json({
-                    success: false,
-                    message: '余额不足，总资产（USDT估值）：$' + totalValue.toFixed(2)
-                });
-            }
-
+if (totalValue + 0.01 < deductAmount) {
+    return res.json({
+        success: false,
+        message: '余额不足，总资产（USDT估值）：$' + totalValue.toFixed(2)
+    });
+}
             // 3. 按顺序扣款
             let remaining = deductAmount;   // 还需要扣多少 USDT
             const deductDetail = [];        // 记录扣款明细
@@ -85,7 +85,7 @@ module.exports = (app) => {
 
                 const balanceValue = balance * price; // 该币种值多少 USDT
 
-                if (balanceValue <= remaining) {
+                if (balanceValue + 0.01 <= remaining) {
                     // 该币种全部扣光
                     await asset.update({ balance: 0, total: 0 });
                     remaining -= balanceValue;

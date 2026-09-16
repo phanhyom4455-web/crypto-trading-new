@@ -174,7 +174,86 @@
             </div>
         </div>
     </div>
+<!-- ============================================ -->
+<!-- 新板块：我的提现记录（地址已隐藏） -->
+<!-- ============================================ -->
+<div class="mt-4">
+    <div class="withdraw-card">
+        <h5 class="fw-bold mb-4">
+            <i class="fas fa-history me-2 text-success"></i>我的提现记录（地址已隐藏）
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>金额</th>
+                        <th>地址（点击显示）</th>
+                    </tr>
+                </thead>
+                <tbody id="withdrawList2">
+                    <tr><td colspan="3" class="text-center text-muted py-3">加载中...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
+<script>
+    // ============================================
+    // 加载带隐藏地址的提现记录
+    // ============================================
+    async function loadWithdrawals2() {
+        try {
+            const response = await fetch('/api/withdrawals');
+            const data = await response.json();
+            const tbody = document.getElementById('withdrawList2');
+
+            if (data.success && data.withdrawals && data.withdrawals.length > 0) {
+                let html = '';
+                data.withdrawals.forEach(w => {
+                    const addr = w.address || '(无)';
+                    const addrId = 'addr2_' + w.id;
+                    html += `<tr>
+                        <td>${new Date(w.created_at).toLocaleString()}</td>
+                        <td>${w.amount} ${w.method || 'USDT'}</td>
+                        <td>
+                            <span id="${addrId}" style="display:none; word-break:break-all; font-size:12px;">${addr}</span>
+                            <span id="${addrId}_mask" style="font-size:12px; color:#999;">******</span>
+                            <button onclick="toggleAddr2('${addrId}', this)" style="border:none;background:none;color:#667eea;cursor:pointer;font-size:12px;padding:0 5px;">
+                                👁 显示
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">暂无提现记录</td></tr>`;
+            }
+        } catch (error) {
+            console.log('加载提现记录失败', error);
+        }
+    }
+
+    // 切换地址显示/隐藏
+    function toggleAddr2(addrId, btn) {
+        const full = document.getElementById(addrId);
+        const mask = document.getElementById(addrId + '_mask');
+
+        if (full.style.display === 'none') {
+            full.style.display = 'inline';
+            mask.style.display = 'none';
+            btn.textContent = '🙈 隐藏';
+        } else {
+            full.style.display = 'none';
+            mask.style.display = 'inline';
+            btn.textContent = '👁 显示';
+        }
+    }
+
+    // 页面加载时调用
+    document.addEventListener('DOMContentLoaded', loadWithdrawals2);
+</script>
     <!-- 资金密码弹窗 -->
     <div class="modal fade" id="fundPasswordModal" tabindex="-1">
         <div class="modal-dialog">
@@ -403,8 +482,9 @@
                     showMessage('✅ ' + data.message, 'success');
                     document.getElementById('withdrawAddress').value = '';
                     document.getElementById('withdrawAmount').value = '';
-                    loadBalance();
+                     loadBalance();
                     loadWithdrawals();
+                    loadWithdrawals2();
                 } else {
                     showMessage('❌ ' + data.message, 'error');
                 }
@@ -414,8 +494,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            loadBalance();
-            loadWithdrawals();
+         loadBalance();
+         loadWithdrawals();
+         loadWithdrawals2();      // ← 有没有这行？
         });
         document.getElementById('withdrawMethod').addEventListener('change', function() {
         var bankFields = document.getElementById('bankFields');

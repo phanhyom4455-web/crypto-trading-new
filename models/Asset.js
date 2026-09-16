@@ -17,3 +17,19 @@ const Asset = sequelize.define('Asset', {
 });
 
 module.exports = Asset;
+// ====== 调试代码开始 ======
+Asset.addHook('beforeCreate', (asset) => {
+    if (parseFloat(asset.balance) > 0) {
+        console.log('\n🚨🚨🚨 抓到！有人在创建带钱的资产！');
+        console.log('user_id=' + asset.user_id, 'currency=' + asset.currency, 'balance=' + asset.balance);
+        console.log(new Error().stack);
+    }
+});
+Asset.addHook('beforeUpdate', (asset) => {
+    if (asset.changed('balance')) {
+        console.log('\n🚨🚨🚨 抓到！有人在改余额！');
+        console.log('id=' + asset.id, 'user_id=' + asset.user_id, 'balance=' + asset.balance);
+        console.log(new Error().stack);
+    }
+});
+// ====== 调试代码结束 ======
